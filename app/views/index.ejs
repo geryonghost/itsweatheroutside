@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Results</title>
+  </head>
+  <body>
+    <h1>Results</h1>
+    <% results.forEach((document) => { %>
+      <p>Query: <%= document.query %></p>
+      <p>Temperature: <%= document.temperature %></p>
+      <hr>
+    <% }); %>
+  </body>
+</html>

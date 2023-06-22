@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  mongo:
+    container_name: mongodb
+    image: mongo:6
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGO_DB}
+    volumes:
+      # - mongo:/data/db # Used for persistent DB storage??
+      - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    ports:
+    - "127.0.0.1:${MONGO_PORT}:${MONGO_PORT}"
+
+  weather:
+    container_name: weather
+    image: app
+    environment:
+      - MONGO_DB=${MONGO_DB}
+      - MONGO_COLLECTION=${MONGO_COLLECTION}
+      - MONGO_URL=${MONGO_URL}
+      - WEATHER_PORT=${WEATHER_PORT}
+    restart: always
+    build:
+      context: app
+      target: base
+    ports:
+      - "127.0.0.1:${WEATHER_PORT}:${WEATHER_PORT}"
+
+  # nginx:
+  #   build: ./nginx/
+  #   container_name: nginx
+  #   ports:
+  #     - 80:80
+  #   # links:
+  #     # - php
+  #   volumes:
+  #     - ./www/html/:/var/www/html/
+
+  # php:
+  #   build: ./php/
+  #   # image: php:7.0-fpm
+  #   container_name: php
+  #   expose:
+  #     - 9000
+  #   volumes:
+  #     - ./www/html/:/var/www/html/
+
+# Used for persistent DB storage??
+# volumes: 
+#   mongo:
+

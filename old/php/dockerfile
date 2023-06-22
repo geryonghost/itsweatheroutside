@@ -1,0 +1,24 @@
+# FROM php:7.0-fpm
+FROM php:fpm-alpine3.18
+RUN cat /etc/resolv.conf
+# RUN cat /usr/local/etc/php/php.ini
+RUN apk update && apk add automake 
+
+
+RUN apt-get update -y && apt-get upgrade -y && apt-get install git libssl-dev -y
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+RUN echo "extension=mongodb.so" >> /usr/local/etc/php/php.ini
+
+# && apk add pkgconf
+RUN automake -v
+RUN php -m
+RUN php -i
+# RUN nslookup security.debian.org
+COPY ./php-ini-overrides.ini /etc/php7/conf.d/
+# RUN apt-get update \
+ RUN pecl install mongodb \
+#  && echo "extension=mongodb.so" >> /usr/local/etc/php/php.ini \
+#  && apt-get clean \
+#  && rm -rf /var/lib/apt/lists/*
+# RUN php -m
+# RUN php -i

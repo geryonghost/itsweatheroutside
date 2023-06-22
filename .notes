@@ -1,0 +1,62 @@
+docker compose build
+docker compose up  -d
+
+docker compose down && docker compose build && docker compose up -d
+
+
+Local Environment
+brew install rancher-desktop
+brew install vscode
+
+brew install npm
+
+weather/app
+npm init
+npm install -g npm@9.7.1
+npm install express
+
+
+
+lookup
+{
+    "query": "60532",
+    "coordinates": {
+      "longitude":"111",
+			"latitude":"222"
+    },
+    "points": {
+    	"gridid": "111",
+    	"gridx": "222",
+    	"gridy": "333"
+    }
+}
+
+forecasts
+{
+    "query": "60532",
+    "coordinates": {
+      "longitude":"111",
+			"latitude":"222"
+    },
+    "points": {
+    	"gridid": "111",
+    	"gridx": "222",
+    	"gridy": "333"
+    },
+    "number": "1",
+    "name": "1",
+    "temperature": "1",
+    "temperatureunit": "1",
+    "temperaturetrend": "1",
+    "windspeed": "1",
+    "winddirection": "1",
+    "shortforcast": "1",
+    "detailedforcast": "1",
+    "updated": "1"
+  }
+
+  Query
+  {"points.gridx":"111", "points.gridy":"222"}
+
+  https://www.weather.gov/documentation/services-web-api
+  https://www.weather.gov/documentation/services-web-alerts
