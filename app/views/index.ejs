@@ -4,6 +4,11 @@
     <title>Results</title>
   </head>
   <body>
+    <form action="/submit" method="post">
+      <label for="query">Query:</label>
+      <input type="text" id="query" name="query" required><br><br>
+      <input type="submit" value="Submit">
+    </form>
     <h1>Results</h1>
     <% results.forEach((document) => { %>
       <p>Query: <%= document.query %></p>

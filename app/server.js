@@ -1,13 +1,51 @@
 const mongodb = require('mongodb')
+const express = require('express');
+const bodyParser = require('body-parser');
+
 const connectionurl = process.env.MONGO_URL
 const client = new mongodb.MongoClient(connectionurl, { useNewUrlParser: true })
-
-const express = require('express');
 const app = express();
 const port = 3000;
+const openstreetmap_apiurl = 'https://nominatim.openstreetmap.org/search'
+
+// Function to detect empty JSON responses
+function isEmptyObject(obj) {
+  return !Object.keys(obj).length;
+}
+// Function to get number of JSON responses
+function lengthObject(obj) {
+  return Object.keys(obj).length
+}
+// Function to read DB
+// Read the DB and if exists and recent (newer 5 minutes) call the GPS function
+// If exists, but is expired (older than 5 minutes) call weather function
+// Function to obtain the GPS coordinates
+// Use the query to get lat/lon
+// Use the lat/lon to get weather points
+// Use the weather points to get the weather
+// Pass all this information into the DB
 
 // Set the view engine to EJS
 app.set('view engine', 'ejs');
+
+// Handle the form submission
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.post('/submit', (req, res) => {
+  let query = req.body.query;
+  query = query.replace(/\s+/g, ' ') //Replace multiple spaces with a single space
+  query = query.trim();
+  query = query.toLowerCase();
+  query = query.replace('.','').replace(',','');
+  // query = query.replace('lane','ln');
+
+  // Do something with the submitted data
+  console.log('Submitted Query:', query);
+
+  // Respond with a success message
+  res.send('Form submitted successfully!');
+  fetchopenstreetmapdata(query)
+});
 
 // Define a route for rendering the HTML page
 app.get('/', async (req, res) => {
@@ -62,15 +100,15 @@ async function fetchWeatherData() {
 }
 
 // Call the function to fetch weather data
-fetchWeatherData();
+// fetchWeatherData();
 
 // openstreetmap.org API
-const openstreetmap_apiurl = 'https://nominatim.openstreetmap.org/search'
-// /?format=json&limit=1&q='
-const query = '60532' + ' ' + 'US'
 
-async function fetchopenstreetmapdata() {
-    console.log(openstreetmap_apiurl)
+// /?format=json&limit=1&q='
+// const query = '4402 black Parridge lisle il' + ' ' + 'US'
+
+async function fetchopenstreetmapdata(query) {
+    // console.log(openstreetmap_apiurl)
     console.log(query)
     try {
         const response = await axios.get(openstreetmap_apiurl, {
@@ -80,138 +118,22 @@ async function fetchopenstreetmapdata() {
             }
         });
         const openstreetmapdata = response.data;
-
-        console.log(openstreetmapdata)
+        if (isEmptyObject(openstreetmapdata)) {
+        // if (openstreetmapdata == []) {
+          console.log('Error in the query value')
+        } else if (lengthObject(openstreetmapdata) > 1) {
+          console.log('Query is returning multiple results')
+        } else {
+          console.log(openstreetmapdata)
+          console.log(Object.keys(openstreetmapdata).length)
+      }
     } catch (error) {
         console.error('Error fetching openstreetmap data', error);
     }
 }
 
 // Call the function to fetch openstreetmap data
-fetchopenstreetmapdata();
+// fetchopenstreetmapdata();
 
 
 
-
-
-
-
-
-
-
-// // const http = require('http');
-
-// // const hostname = '0.0.0.0';
-// // const port = process.env.WEATHER_PORT;
-
-// // const server = http.createServer((req, res) => {
-// //   res.statusCode = 200;
-// //   res.setHeader('Content-Type', 'text/plain');
-// //   res.end('Hello World\n');
-// // });
-
-// // server.listen(port, hostname, () => {
-// //   console.log(`Server running at http://${hostname}:${port}/`);
-// // });
-
-// // const utils = require("utils")
-
-// // utils.dbConnect();
-
-
-// const express = require("express");
-// const hbs = require("hbs")
-// const path = require("path")
-
-// const app = express();
-// // const hbs = require();
-// // const path = require();
-
-
-
-// app.set("view engine", "hbs");
-// app.set("views", path.join(__dirname,"/views"));
-
-// app.get("/", (req, res) => { 
-//     res.render("index", {    
-//         temperature: getMongo(), 
-//     });
-// });
-// app.listen(3000, (req,res) => {  
-//     console.log("Server running on 3000");
-// })
-// // const path = require('path');
-
-// // app.use(express.static(path.join(__dirname, "/public")));
-// // const server = app.listen(3000, async () => {
-// //     try {
-// //         // await mongoclient.connect();
-// //         // database = mongoclient.db(process.env.MONGO_DB);
-// //         // collection = database.collection(`${process.env.MONGO_COLLECTION}`);
-// //         console.log("Listening at :3000");
-// //     } catch (error) {
-// //         console.error(error);
-// //     }
-// // });
-
-
-// // MongoDB reference
-// let db;
-
-// // Get a DB connection when this module is loaded
-// (function getDbConnection() {
-//     utils.dbConnect().then((database) => {
-//         db = database;
-//     }).catch((err) => {
-//         logger.error('Error while initializing DB: ' + err.message, 'lists-dao-mongogb.getDbConnection()');
-//     });
-// })();
-
-// const mongodb = require('mongodb')
-// const connectionurl = process.env.MONGO_URL
-// const mongoclient = new mongodb.MongoClient(connectionurl, { useNewUrlParser: true })
-
-// function getMongo() {
-//     return new Promise((resolve, reject) => {
-//     let lists = db.collection('shoppingLists');
-//         lists.find({}).toArray((err, documents) => {
-//         if (err) {
-//         logger.error('Error occurred: ' + err.message, 'fetchAll()');
-//         reject(err);
-//         } else {
-//         logger.debug('Raw data: ' + JSON.stringify(documents), 'fetchAll()');
-//         resolve({ data: JSON.stringify(documents), statusCode: (documents.length > 0) ? 200 : 404 });
-//         }
-//         });
-//         });
-        
-
-
-
-
-
-
-
-//     // const mongopromise = new Promise((resolve, reject) => {
-//     //     mongoclient.connect();
-//     //     database = mongoclient.db(process.env.MONGO_DB);
-//     //     collection = database.collection(`${process.env.MONGO_COLLECTION}`);
-//     //     const results = collection.find({}).toArray();
-//     // })
-    
-//     // return results;
-// }
-
-
-// // app.get("/", async (request, response) => {
-// //     try {
-// //         await mongoclient.connect();
-// //         database = mongoclient.db(process.env.MONGO_DB);
-// //         collection = database.collection(`${process.env.MONGO_COLLECTION}`);
-        
-// //         const results = await collection.find({}).toArray();
-// //         response.send(results);
-// //     } catch (error) {
-// //         response.status(500).send({ "message": error.message });
-// //     }
-// // });
