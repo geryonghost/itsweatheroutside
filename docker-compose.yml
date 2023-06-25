@@ -4,8 +4,8 @@ services:
   mongo:
     container_name: mongodb
     image: mongo:6
-    environment:
-      - MONGO_INITDB_DATABASE=${MONGO_DB}
+    # environment:
+      # - MONGO_INITDB_DATABASE=${MONGO_DB}
     volumes:
       # - mongo:/data/db # Used for persistent DB storage??
       - ./mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
@@ -15,17 +15,17 @@ services:
   weather:
     container_name: weather
     image: app
-    environment:
-      - MONGO_DB=${MONGO_DB}
-      - MONGO_COLLECTION=${MONGO_COLLECTION}
-      - MONGO_URL=${MONGO_URL}
-      - WEATHER_PORT=${WEATHER_PORT}
+    # environment:
+      # - MONGO_DB=${MONGO_DB}
+      # - MONGO_COLLECTION=${MONGO_COLLECTION}
+      # - MONGO_URL=${MONGO_URL}
+      # - APP_PORT=${APP_PORT}
     restart: always
     build:
       context: app
       target: base
     ports:
-      - "127.0.0.1:${WEATHER_PORT}:${WEATHER_PORT}"
+      - "127.0.0.1:${APP_PORT}:${APP_PORT}"
 
   # nginx:
   #   build: ./nginx/
