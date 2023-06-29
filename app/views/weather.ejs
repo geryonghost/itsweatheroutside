@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Weather</title>
+  </head>
+  <body>
+    <form action="/weather" method="post">
+      <label for="query">Query:</label>
+      <input type="text" id="query" name="query" required>
+      <input type="submit" value="Submit">
+    </form>
+    <h1>7 Day Forecast</h1>
+    <% results.periods.forEach((document) => { %>
+      <p>
+        <%= document.name %> - <%= document.temperature %> <%= document.temperatureUnit %><br />
+        <%= document.probabilityOfPrecipitation.value %><% if (document.probabilityOfPrecipitation.unitCode == 'wmoUnit:percent') { %>% <% } %> chance of precipitation<br />
+        <%= document.relativeHumidity.value %><% if (document.relativeHumidity.unitCode == 'wmoUnit:percent') { %>% <% } %> humidity<br />
+        <%= document.windSpeed %> <%= document.windDirection %><br />
+        <img src="<%= document.icon %>" /> <%=document.shortForecast %><br />
+        <%= document.detailedForecast %>
+      </p>
+      <hr>
+    <% }); %>
+  </body>
+</html>
