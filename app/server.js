@@ -8,8 +8,8 @@ const mongodb = require('mongodb');
 const bodyParser = require('body-parser');
 const { render } = require('ejs');
 
-const api_weather = process.env.API_WEATHER;
-const api_openstreetmap = process.env.API_OPENSTREETMAP;
+// const api_weather = process.env.API_WEATHER;
+// const api_openstreetmap = process.env.API_OPENSTREETMAP;
 const app_port = process.env.APP_PORT;
 // const db_connection = process.env.DB_CONNECTION;
 // const db_name = process.env.DB_NAME;
@@ -31,6 +31,16 @@ try {
   console.error('Error connecting to MongoDB', error);
 }
 
+// Function to convert Celsius to Fahrenheit
+function celsiusToFahrenheit(celsius) {
+  const fahrenheit = (celsius * 9/5) + 32;
+  return fahrenheit;
+}
+// Function to convert Fahrenheit to Celsius
+function fahrenheitToCelsius(fahrenheit) {
+  const celsius = (fahrenheit - 32) * 5/9;
+  return celsius;
+}
 // Function to detect empty JSON responses
 function isEmptyObject(obj) {
   return !Object.keys(obj).length;
@@ -40,15 +50,16 @@ function lengthObject(obj) {
   return Object.keys(obj).length;
 }
 
+getCollection(collection, 'Boston MA', function (err, result) {
 // getCollection(collection, 'Aurora IL', function (err, result) {
-//   if (err) {
-//     console.error('Error:', err);
-//     return;
-//   }
+  if (err) {
+    console.error('Error:', err);
+    return;
+  }
 
-//   // console.log('Collection Result:', result);
-//   console.log(result.periods[0])
-// });
+  // console.log('Collection Result:', result);
+  // console.log(result)
+});
 
 
 
@@ -240,13 +251,13 @@ async function getCollection(collection, search_query, callback) {
           // const coord_results = result
           callback(null, result);
         });
-    }
-
-    if (!isEmptyObject(results) && forecastdifference > 5) {
+    } else if (!isEmptyObject(results) && forecastdifference > 5) {
         console.log("Forecast is older than 5 minutes, refreshing");
-        const lat = results[0].lat
-        const lon = results[0].lon
-        const forecasturl = results[0].forecasturl
+        const lat = results[0].lat;
+        const lon = results[0].lon;
+        const forecasturl = results[0].forecasturl;
+        const forecasthourlyurl = results[0].forecasthourlyurl;
+        const forecastgriddataurl = results[0].forecastgriddataurl;
 
 
         getWeather(collection, search_query, lat, lon, forecasturl, function (err, result) {
@@ -298,11 +309,13 @@ async function getCollection(collection, search_query, callback) {
 
 // Function to get Lat and Lon for defined Query
 async function getCoordinates(search_query, callback) {
+  openstreetmap_api = 'https://nominatim.openstreetmap.org/search';
+
   // return new Promise((resolve, reject) => {
   api_query = search_query + ' US';
   console.log(api_query);
   try {
-    const mapdata_results = await axios.get(api_openstreetmap, {
+    const mapdata_results = await axios.get(openstreetmap_api, {
         params: {
             q: api_query,
             // q: 'Lisle IL US',
@@ -315,7 +328,8 @@ async function getCoordinates(search_query, callback) {
     });
     // console.log(mapdata_results);
     const mapdata = mapdata_results.data;
-    console.log(mapdata);
+    console.log(mapdata[0].lat + ',' + mapdata[0].lon)
+    // console.log(mapdata);
     if (isEmptyObject(mapdata)) {
       console.error('Error in the query value');
       return;
@@ -329,6 +343,8 @@ async function getCoordinates(search_query, callback) {
       const lat = mapdata[0].lat
       const lon = mapdata[0].lon
       const forecasturl = 0
+      // const forecasthourlyurl = 0
+      // const forecastgriddataurl = 0
 
       // resolve(mapdata);
       getWeather(collection, search_query, lat, lon, forecasturl, function (err, result) {
@@ -351,22 +367,54 @@ async function getCoordinates(search_query, callback) {
 
 // Function to use forecasturl or lat and lon to obtain forecast
 async function getWeather(collection, search_query, lat, lon, forecasturl, callback) {
-  let newquery = false
+  const weather_forecast_api = 'https://api.weather.gov/points/'
+  const weather_alerts_api = 'https://api.weather.gov/alerts/active'
 
-  if (forecasturl == 0) {
+  const location = lat + ',' + lon;
+  let newquery = false;
+  // let forecastobservationstationsurl, forecastzoneurl, forecastcountyurl, forecastfireweatherzoneurl
+
+  // If forecasturl, forecasthourlyurl, and forecastgriddataurl are set skip this step.
+  if (forecasturl == 0 || forecasthourlyurl == 0 || forecastgriddataurl == 0) {
     try {
       newquery = true;
-      const forecasturl_results = await axios.get(api_weather + lat + ',' + lon);
-      forecasturl = forecasturl_results.data.properties.forecast
-      console.log(forecasturl);
+      const results = await axios.get(weather_forecast_api + lat + ',' + lon);
+      // console.log(results.data.properties)
+      forecasturl = results.data.properties.forecastGridData;
+      // forecasthourlyurl = results.data.properties.forecastHourly;
+      // forecastgriddataurl = results.data.properties.forecastGridData;
+      // forecastobservationstationsurl = results.data.properties.observationStations;
+      // forecastzoneurl = results.data.properties.forecastZone;
+      // forecastcountyurl = results.data.properties.county;
+      // forecastfireweatherzoneurl = results.data.properties.fireWeatherZone;
+
+      // console.log(forecasturl);
     } catch (err) {
       console.error('Error fetching forecasturl', err);
     }
   }
   try {
     const now = new Date().toISOString();
-    const forecast_results = await axios.get(forecasturl);
-    const weatherdata = forecast_results.data;
+    const forecast_results = await axios.get(forecasturl + '/forecast');
+    const forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly');
+    const forecastgriddata_results = await axios.get(forecasturl);
+    const forecastalerts_results = await axios.get(weather_alerts_api, {
+      params: {
+        point: location
+      }
+    });
+    // console.log('forecastgriddataurl_results: ')
+    // console.log(forecastgriddataurl_results.data);
+    // const forecastobservationstationsurl_results = await axios.get(forecastobservationstationsurl);
+    // console.log('forecastobservationstationsurl_results: ' + JSON.stringify(forecastobservationstationsurl_results, null, 2));
+    // const forecastzoneurl_results = await axios.get(forecastzoneurl);
+    // console.log('forecastzoneurl_results: ' + JSON.stringify(forecastzoneurl_results, null, 2));
+    // const forecastcountyurl_results = await axios.get(forecastcountyurl);
+    // console.log('forecastcountyurl_results: ' + JSON.stringify(forecastcountyurl_results, null, 2));
+    // const forecastfireweatherzoneurl_results = await axios.get(forecastfireweatherzoneurl);
+    // console.log('forecastfireweatherzoneurl_results: ' + JSON.stringify(forecastfireweatherzoneurl_results, null, 2));
+        
+    // const weatherdata = forecasturl_results.data;
       
     const document = {
       "query": search_query,
@@ -376,11 +424,15 @@ async function getWeather(collection, search_query, lat, lon, forecasturl, callb
       "forecastfrom": now,
     };
 
-    const db_data = { ...document, ...weatherdata.properties };
-
+    let forecast_json = {"forecast" : forecast_results.data.properties.periods};
+    let forecasthourly_json = {"forecasthourly" : forecasthourly_results.data.properties.periods};
+    let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
+    let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
+ 
+    const db_data = { ...document, ...forecast_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
 
     if (newquery == true) {
-      console.log('Inserting forecast into MongoDB');
+      console.log('Inserting forecast into MongoDB'); 
       collection.insertOne(db_data, function(err, result) {
         if (err) {
           console.error('Error inserting document:', err);
