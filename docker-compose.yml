@@ -20,7 +20,8 @@ services:
       context: app
       target: base
     ports:
-      - "127.0.0.1:${APP_PORT}:${APP_PORT}"
+      # - "127.0.0.1:${APP_PORT}:${APP_PORT}"
+      - "${APP_PORT}:${APP_PORT}"
 
   # nginx:
   #   build: ./nginx/
