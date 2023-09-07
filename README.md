@@ -23,6 +23,7 @@ The current code will take input in the form of `60101`, `Chicago, IL`, or `233 
 
 # To Do
 1. Start using the ticketing system ing GitHub
+2. GitHub security/workflows/code folder structure...
 2. Start generating a functional UX for Mobile, Desktop, hopefully native apps.
 3. Increase the amount of forecast data available on the page
 4. Find placement for Ads to support the project
