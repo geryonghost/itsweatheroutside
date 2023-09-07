@@ -54,7 +54,111 @@ function lengthObject(obj) {
 //   }
 // });
 
+async function getWeatherNoDB(search_query) {
+  let mapdata;
+  
+  const query = search_query;
+  console.log(query);
+  try {
+    const mapdata_results = await axios.get('https://nominatim.openstreetmap.org/search', {
+        params: {
+            q: query,
+            'format': 'json',
+            'accept-language': 'en',
+            'countrycodes':'us',
+            'limit':1,
+            'email':'support@domain.com'
+        }
+    });
 
+    mapdata = mapdata_results.data;
+    console.log(mapdata[0].lat + ',' + mapdata[0].lon)
+
+    if (isEmptyObject(mapdata)) {
+      console.error('Error in the query value');
+      return;
+    } else if (lengthObject(mapdata) > 1) {
+      console.error('Query is returning multiple results');
+      console.log(Object.keys(mapdata).length);
+      console.log(mapdata);
+      return;
+    } else {
+      console.log('Querying OpenStreetMapData successful');
+    }
+  } catch (error) {
+    console.error('Error fetching openstreetmap data', error);
+  }
+
+  lat = mapdata[0].lat;
+  lon = mapdata[0].lon;
+
+  // Get weather forecast
+  const weather_forecast_api = 'https://api.weather.gov/points/'
+  const weather_alerts_api = 'https://api.weather.gov/alerts/active'  
+  const location = lat + ',' + lon;
+  
+  console.log("Getting Forecast URL");
+  try {
+    const results = await axios.get(weather_forecast_api + lat + ',' + lon);
+    forecasturl = results.data.properties.forecastGridData;
+  } catch (err) {
+    console.error('Error fetching forecast URL', err);
+  }
+    
+  let now, forecastweekly_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
+  try {
+    now = new Date().toISOString();
+    console.log("Requesting Weekly Forecast");
+    forecastweekly_results = await axios.get(forecasturl + '/forecast');
+    console.log("Requesting Hourly Forecast");
+    forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly');
+    console.log("Requesting Grid");
+    forecastgriddata_results = await axios.get(forecasturl);
+    console.log("Requesting Alerts");
+    forecastalerts_results = await axios.get(weather_alerts_api, {
+      params: {
+        point: location
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+  }
+
+  try {
+    const document = {
+      "query": search_query,
+      "lat": lat,
+      "lon": lon,
+      "forecasturl": forecasturl,
+      "forecastfrom": now,
+    };
+
+    let forecastweekly_json = {"forecastweekly" : forecastweekly_results.data.properties.periods};
+    let forecasthourly_json = {"forecasthourly" : forecasthourly_results.data.properties.periods};
+    let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
+    let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
+ 
+    const db_data = { ...document, ...forecastweekly_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
+
+    // if (update_mongodb != true) {
+      // console.log('Inserting forecast into MongoDB'); 
+      // await collection.insertOne(db_data);
+    // } else {
+      // console.log('Updating forecast in MongoDB');
+      // const filter = { "query": search_query }
+      // await collection.replaceOne(filter, db_data);
+    // }
+
+    weather_forecast = [db_data];
+    // weather_forecast = "Test content"
+
+    
+  } catch (err) {
+    console.error(err);
+  }
+
+  return weather_forecast;
+}
 
 
 
@@ -65,7 +169,8 @@ async function getWeather(search_query) {
   let mongo_client, db, collection
   try {
     console.log('Connecting to MongoDB');
-    mongo_client = await mongodb.MongoClient.connect('mongodb://mongo:27017', { useNewUrlParser: true });
+    mongo_client = await mongodb.MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true });
+    // mongo_client = await mongodb.MongoClient.connect('mongodb://mongo:27017', { useNewUrlParser: true });
     console.log('Connected to MongoDB');
     db = mongo_client.db('weather');
     console.log('MongoDB DB is set');
@@ -472,7 +577,10 @@ async function getWeather2(collection, search_query, lat, lon, forecasturl) {
 // Set the view engine to EJS
 app.set('view engine', 'ejs');
 
-// // Handle the form submission
+// Static files
+app.use(express.static('public'));
+
+// Handle the form submission
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Start the server
@@ -485,7 +593,7 @@ app.get('/', async (req, res) => {
 });
 
 app.post('/', async (req, res) => {
-  let query = req.body.query;
+  let query = req.body.search;
   let forecast
   if (query != '') {
     query = query.replace(/\s+/g, ' ') //Replace multiple spaces with a single space
@@ -495,7 +603,7 @@ app.post('/', async (req, res) => {
     query = query.replace('lane','ln');
 
     try {
-      forecast = await getWeather(query);
+      forecast = await getWeatherNoDB(query);
         // return results.forecast
         // Forecast Alerts: Foreach [0] or [1].properties.event, headline,description     
       // });

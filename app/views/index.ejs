@@ -1,66 +1,384 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+
+        <!-- <link rel="icon" type="image/x-icon" href="assets/favicon.ico" /> -->
+        <!-- Font Awesome icons (free version)-->
+        <!-- <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script> -->
+        <!-- Google fonts-->
+        <!-- <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" /> -->
+        <!-- <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" /> -->
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+
+        <!-- Swiper CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
     <title>Weather</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
 
-  <!-- Include Swiper JS -->
-  <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    <!-- Include Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
-  </head>
-  <body>
-    <form action="" method="post">
-      <label for="query">Query:</label>
-      <input type="text" id="query" name="query" required>
-      <input type="submit" value="Submit">
-    </form>
+    <% 
+        let showForecast = false 
+        if (locals.forecast && locals.forecast.length > 0) {
+            showForecast = true
+        }
 
-
-
-    <div style="width:200px;">
-    <!-- Slider main container -->
-    <div class="swiper-container">
-      <!-- Additional required wrapper -->
-      <div class="swiper-wrapper">
-    <%
-      if (locals.forecast && locals.forecast.length > 0) {
-        forecast.forEach((type) => {
-          type.forecastweekly.forEach((weekly) => {
+        function formatDate(dateTimeString) {
+            const date = new Date(dateTimeString);
+            const formattedDate = date.toLocaleString('en-US', {
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true,
+                <!-- timeZoneName: 'short', -->
+            });
+            return formattedDate;
+        }
     %>
-        <div class="swiper-slide"><%= weekly.temperature %><img src="<%= weekly.icon %>" /></div>
-    <%
-      });
-    %>
-      </div>
-    </div>
-  <!-- If we need pagination -->
-  <!-- <div class="swiper-pagination"></div> -->
+    </head>
+    <!-- <body id="page-top"> -->
+    <body>
+        <div style="text-align: left;">
+            easyweather.app
+        </div>
+        <br />
+        <div style="text-align: center;">
+            <form style="display: inline-block;" action="" method="post">
+                    <input type="search" id="search" name="search" required />
+                    <button type="submit">Search</button><br />
+                    <% if (showForecast == false) { %>
+                    <small>
+                        60601 (Least accurate)<br />
+                        Chicago IL (More accurate) <br />
+                        233 S Wacker Dr Chicago IL (Most accurate)
+                    </small>
+                    <% } %>
+                  </form>  
+            </form>
+        </div>
+        <br />
+        <div style="text-align: center;">
+            <h3>Alerts</h3>
 
-  <!-- If we need navigation buttons -->
-  <div class="swiper-button-prev"></div>
-  <div class="swiper-button-next"></div>
+            How do I show the time of the high and the time of the low?<Br />
+            griddata.maxTemperature.values["validTime","value"]<br />
+            griddata.minTemperature.values["validTime","value"]<br /><Br />
+            Feels Like<br />
+            griddata.apparentTemperature.values["validTime","value"]<Br /><Br />
+            Heat Index<br />
+            griddata.heatIndex.values["validTime","value"]<Br /><Br />
+            Wind Chill<br />
+            griddata.windChill.values["validTime","value"]<Br /><Br />
+            Sky Cover<br />
+            griddata.skyCover.values["validTime","value"]<Br /><Br />
+            Amount of Precipitation<br />
+            griddata.quantitativePrecipitation.uom #Unit
+            griddata.quantitativePrecipitation.values["validTime","value"]<Br /><Br />
+            Ice Accumulation<br />
+            griddata.iceAccumulation.uom #Unit
+            griddata.iceAccumulation.values["validTime","value"]<Br /><Br />
+            Snowfall Amount<br />
+            griddata.snowfallAmount.uom #Unit
+            griddata.snowfallAmount.values["validTime","value"]<Br /><Br />
+            probabilityOfThunder<br /><br />
+        </div>
+   
+        <div style="text-align: center;">
+            <h3>Hourly</h3>
+            <div class="swiper" id="swiper-hourly">
+                <div class="swiper-wrapper">
+              <%
+                if (showForecast == true) {
+                  forecast.forEach((type) => {
+                    type.forecasthourly.forEach((hourly) => {
+              %>
+                    <div class="swiper-slide">
+                        <%= formatDate(hourly.startTime) %><br />
+                        <img src="<%= hourly.icon.replace(',0?size=small','?size=large') %>" /><br />
+                        <strong><%= hourly.temperature %>&#176; <%= hourly.temperatureUnit %></strong><br />
+                        <% if (hourly.probabilityOfPrecipitation.value > 0) { %>
+                            <%= hourly.probabilityOfPrecipitation.value %>% chance of precipitation<br />
+                        <% } %>
+                        <% if (hourly.temperatureTrend != null) { %>
+                            <small>(Temperature is <%= hourly.temperatureTrend %>)</small><br /><br />
+                        <% } else { %>
+                            <br />
+                        <% } %>
+                        Humidity: <%= hourly.relativeHumidity.value %>%<br />
+                        Wind Speed: <%= hourly.windSpeed %><br />
+                        Wind Direction: <%= hourly.windDirection %> <br /><br />
+                        <%= hourly.shortForecast %>
+                    </div>
+              <%
+                })})};
+              %>
+                </div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
 
-  <!-- If we need scrollbar -->
-  <!-- <div class="swiper-scrollbar"></div> -->
-</div>
+        <div style="text-align: center;">
+            <h3>7 Day Forecast</h3>
+            <div class="swiper" id="swiper-7day">
+                <div class="swiper-wrapper">
+              <%
+                if (showForecast == true) {
+                  forecast.forEach((type) => {
+                    type.forecastweekly.forEach((weekly) => {
+              %>
+                    <div class="swiper-slide">
+                        <%= weekly.name %><br />
+                        <img src="<%= weekly.icon.replace('medium','large') %>" /><br />
+                        <strong><%= weekly.temperature %>&#176; <%= weekly.temperatureUnit %></strong><br />
+                        <% if (weekly.probabilityOfPrecipitation.value > 0) { %>
+                            <%= weekly.probabilityOfPrecipitation.value %>% chance of precipitation<br />
+                        <% } %>
+                        <% if (weekly.temperatureTrend != null) { %>
+                            <small>(Temperature is <%= weekly.temperatureTrend %>)</small><br /><br />
+                        <% } else { %>
+                            <br />
+                        <% } %>
+                        Humidity: <%= weekly.relativeHumidity.value %>%<br />
+                        Wind Speed: <%= weekly.windSpeed %><br />
+                        Wind Direction: <%= weekly.windDirection %> <br /><br />
+                        <%= weekly.detailedForecast %>
+                    </div>
+              <%
+                })})};
+              %>
+                </div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div>
+        <br />
+        <div style="text-align: center;">
+            &#169; <%= new Date().getFullYear() %> easyweather.app
+        </div>
+
+        <!-- <% if (locals.forecast && locals.forecast.length > 0) { %>
+        <hr>
+        <%= JSON.stringify(forecast) %>
+        <% } else { %>
+        <p>No forecast is available</p>
+        <% } %> -->
+        
+        <!-- Navigation-->
+        <!-- <nav class="navbar navbar-expand-lg bg-secondary text-uppercase fixed-top" id="mainNav"> -->
+          <!-- <div class="container"> -->
+              <!-- <a class="navbar-brand" href="#page-top">EasyWeather</a> -->
+              <!-- <button class="navbar-toggler text-uppercase font-weight-bold bg-primary text-white rounded" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                  Menu
+                  <i class="fas fa-bars"></i>
+              </button> -->
+              <!-- <div class="collapse navbar-collapse" id="navbarResponsive">
+                  <ul class="navbar-nav ms-auto">
+                      <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#portfolio">Portfolio</a></li>
+                      <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#about">About</a></li>
+                      <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded" href="#contact">Contact</a></li>
+                  </ul>
+              </div> -->
+          <!-- </div> -->
+          <!-- <form class="form-inline my-2 my-lg-0" action="" method="post">
+            <input class="form-control mr-sm-2" type="search" id="search" name="search" placeholder="Search" aria-label="Search" required>
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form> -->
+      <!-- </nav> -->
 
     <p>
-      <!-- <%= JSON.stringify(type.forecastweekly) %><hr /> -->
-    <% }); %>
-    <%
-      } else {
-    %>
-    <p>No forecast is available</p>
-    <%
-      }
-    %>
+     
+
  
+    <!-- <section class="page-section bg-primary text-white mb-0" id="search"></section> -->
+    <!-- <header class="masthead bg-primary text-white text-center"> -->
+      <!-- <div class="container d-flex align-items-center flex-column"> -->
+        <!-- <form class="form-inline my-2 my-lg-0" action="" method="post">
+          <input class="form-control mr-sm-2" type="search" id="search" name="search" placeholder="Search" aria-label="Search" required>
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>   -->
+        <!-- Masthead Avatar Image-->
+          <!-- <img class="masthead-avatar mb-5" src="assets/img/avataaars.svg" alt="..." /> -->
+          <!-- Masthead Heading-->
+          <!-- <h1 class="masthead-heading text-uppercase mb-0">Start Bootstrap</h1> -->
+          <!-- Icon Divider-->
+          <!-- <div class="divider-custom divider-light">
+              <div class="divider-custom-line"></div>
+              <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+              <div class="divider-custom-line"></div>
+          </div> -->
+          <!-- Masthead Subheading-->
+          <!-- <p class="masthead-subheading font-weight-light mb-0">Graphic Artist - Web Designer - Illustrator</p> -->
+      <!-- </div> -->
+  <!-- </header> -->
+    <!-- </section> -->
+  <!-- About Section-->
+  <!-- <section class="page-section bg-primary text-white mb-0" id="about"> -->
+      <!-- <div class="container"> -->
+          <!-- About Section Heading-->
+          <!-- <h2 class="page-section-heading text-center text-uppercase text-white">About</h2> -->
+          <!-- Icon Divider-->
+          <!-- <div class="divider-custom divider-light"> -->
+              <!-- <div class="divider-custom-line"></div> -->
+              <!-- <div class="divider-custom-icon"><i class="fas fa-star"></i></div> -->
+              <!-- <div class="divider-custom-line"></div> -->
+          <!-- </div> -->
+          <!-- About Section Content-->
+          <!-- <div class="row"> -->
+              <!-- <div class="col-lg-4 ms-auto"><p class="lead">Freelancer is a free bootstrap theme created by Start Bootstrap. The download includes the complete source files including HTML, CSS, and JavaScript as well as optional SASS stylesheets for easy customization.</p></div> -->
+              <!-- <div class="col-lg-4 me-auto"><p class="lead">You can create your own custom avatar for the masthead, change the icon in the dividers, and add your email address to the contact form to make it fully functional!</p></div> -->
+          <!-- </div> -->
+          <!-- About Section Button-->
+          <!-- <div class="text-center mt-4"> -->
+              <!-- <a class="btn btn-xl btn-outline-light" href="https://startbootstrap.com/theme/freelancer/"> -->
+                  <!-- <i class="fas fa-download me-2"></i> -->
+                  <!-- Free Download! -->
+              <!-- </a> -->
+          <!-- </div> -->
+      <!-- </div> -->
+  <!-- </section> -->
+  <!-- Contact Section-->
+  <!-- <section class="page-section" id="contact"> -->
+      <!-- <div class="container"> -->
+          <!-- Contact Section Heading-->
+          <!-- <h2 class="page-section-heading text-center text-uppercase text-secondary mb-0">Contact Me</h2> -->
+          <!-- Icon Divider-->
+          <!-- <div class="divider-custom"> -->
+              <!-- <div class="divider-custom-line"></div> -->
+              <!-- <div class="divider-custom-icon"><i class="fas fa-star"></i></div> -->
+              <!-- <div class="divider-custom-line"></div> -->
+          <!-- </div> -->
+          <!-- Contact Section Form-->
+          <!-- <div class="row justify-content-center"> -->
+              <!-- <div class="col-lg-8 col-xl-7"> -->
+                  <!-- * * * * * * * * * * * * * * *-->
+                  <!-- * * SB Forms Contact Form * *-->
+                  <!-- * * * * * * * * * * * * * * *-->
+                  <!-- This form is pre-integrated with SB Forms.-->
+                  <!-- To make this form functional, sign up at-->
+                  <!-- https://startbootstrap.com/solution/contact-forms-->
+                  <!-- to get an API token!-->
+                  <!-- <form id="contactForm" data-sb-form-api-token="API_TOKEN"> -->
+                      <!-- Name input-->
+                      <!-- <div class="form-floating mb-3"> -->
+                          <!-- <input class="form-control" id="name" type="text" placeholder="Enter your name..." data-sb-validations="required" /> -->
+                          <!-- <label for="name">Full name</label> -->
+                          <!-- <div class="invalid-feedback" data-sb-feedback="name:required">A name is required.</div> -->
+                      <!-- </div> -->
+                      <!-- Email address input-->
+                      <!-- <div class="form-floating mb-3"> -->
+                          <!-- <input class="form-control" id="email" type="email" placeholder="name@example.com" data-sb-validations="required,email" /> -->
+                          <!-- <label for="email">Email address</label> -->
+                          <!-- <div class="invalid-feedback" data-sb-feedback="email:required">An email is required.</div> -->
+                          <!-- <div class="invalid-feedback" data-sb-feedback="email:email">Email is not valid.</div> -->
+                      <!-- </div> -->
+                      <!-- Phone number input-->
+                      <!-- <div class="form-floating mb-3"> -->
+                          <!-- <input class="form-control" id="phone" type="tel" placeholder="(123) 456-7890" data-sb-validations="required" /> -->
+                          <!-- <label for="phone">Phone number</label> -->
+                          <!-- <div class="invalid-feedback" data-sb-feedback="phone:required">A phone number is required.</div> -->
+                      <!-- </div> -->
+                      <!-- Message input-->
+                      <!-- <div class="form-floating mb-3"> -->
+                          <!-- <textarea class="form-control" id="message" type="text" placeholder="Enter your message here..." style="height: 10rem" data-sb-validations="required"></textarea> -->
+                          <!-- <label for="message">Message</label> -->
+                          <!-- <div class="invalid-feedback" data-sb-feedback="message:required">A message is required.</div> -->
+                      <!-- </div> -->
+                      <!-- Submit success message-->
+                      <!---->
+                      <!-- This is what your users will see when the form-->
+                      <!-- has successfully submitted-->
+                      <!-- <div class="d-none" id="submitSuccessMessage"> -->
+                          <!-- <div class="text-center mb-3"> -->
+                              <!-- <div class="fw-bolder">Form submission successful!</div> -->
+                              <!-- To activate this form, sign up at -->
+                              <!-- <br /> -->
+                              <!-- <a href="https://startbootstrap.com/solution/contact-forms">https://startbootstrap.com/solution/contact-forms</a> -->
+                          <!-- </div> -->
+                      <!-- </div> -->
+                      <!-- Submit error message-->
+                      <!---->
+                      <!-- This is what your users will see when there is-->
+                      <!-- an error submitting the form-->
+                      <!-- <div class="d-none" id="submitErrorMessage"><div class="text-center text-danger mb-3">Error sending message!</div></div> -->
+                      <!-- Submit Button-->
+                      <!-- <button class="btn btn-primary btn-xl disabled" id="submitButton" type="submit">Send</button> -->
+                  <!-- </form> -->
+              <!-- </div> -->
+          <!-- </div> -->
+      <!-- </div> -->
+  <!-- </section> -->
+  <!-- Footer-->
+  <!-- <footer class="footer text-center"> -->
+      <!-- <div class="container"> -->
+          <!-- <div class="row"> -->
+              <!-- Footer Location-->
+              <!-- <div class="col-lg-4 mb-5 mb-lg-0"> -->
+                  <!-- <h4 class="text-uppercase mb-4">Location</h4> -->
+                  <!-- <p class="lead mb-0"> -->
+                      <!-- 2215 John Daniel Drive -->
+                      <!-- <br /> -->
+                      <!-- Clark, MO 65243 -->
+                  <!-- </p> -->
+              <!-- </div> -->
+              <!-- Footer Social Icons-->
+              <!-- <div class="col-lg-4 mb-5 mb-lg-0"> -->
+                  <!-- <h4 class="text-uppercase mb-4">Around the Web</h4> -->
+                  <!-- <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-facebook-f"></i></a> -->
+                  <!-- <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-twitter"></i></a> -->
+                  <!-- <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-linkedin-in"></i></a> -->
+                  <!-- <a class="btn btn-outline-light btn-social mx-1" href="#!"><i class="fab fa-fw fa-dribbble"></i></a> -->
+              <!-- </div> -->
+              <!-- Footer About Text-->
+              <!-- <div class="col-lg-4"> -->
+                  <!-- <h4 class="text-uppercase mb-4">About Freelancer</h4> -->
+                  <!-- <p class="lead mb-0"> -->
+                      <!-- Freelance is a free to use, MIT licensed Bootstrap theme created by -->
+                      <!-- <a href="http://startbootstrap.com">Start Bootstrap</a> -->
+                      <!-- . -->
+                  <!-- </p> -->
+              <!-- </div> -->
+          <!-- </div> -->
+      <!-- </div> -->
+  <!-- </footer> -->
+  <!-- Copyright Section-->
+  <!-- <div class="copyright py-4 text-center text-white"> -->
+      <!-- <div class="container"><small>Copyright &copy; easyweather.app 2023</small></div> -->
+  <!-- </div> -->
+
+  <!-- Bootstrap core JS-->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script> -->
+  <!-- Core theme JS-->
+  <!-- <script src="js/scripts.js"></script> -->
+  <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+  <!-- * *                               SB Forms JS                               * *-->
+  <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+  <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+  <!-- <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script> -->
+
+
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        var mySwiper = new Swiper('.swiper-container', {
+        var swiperHourly = new Swiper('#swiper-hourly', {
+            // Add your swiper configuration options here
+            // For example:
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev'
+            }
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        var swiper7day = new Swiper('#swiper-7day', {
             // Add your swiper configuration options here
             // For example:
             navigation: {

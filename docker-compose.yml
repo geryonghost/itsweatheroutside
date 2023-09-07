@@ -7,21 +7,21 @@ services:
     ports:
     - "127.0.0.1:${MONGO_PORT}:${MONGO_PORT}"
 
-  weather:
-    container_name: weather
-    image: app
-    # environment:
-      # - MONGO_DB=${MONGO_DB}
-      # - MONGO_COLLECTION=${MONGO_COLLECTION}
-      # - MONGO_URL=${MONGO_URL}
-      # - APP_PORT=${APP_PORT}
-    restart: always
-    build:
-      context: app
-      target: base
-    ports:
-      # - "127.0.0.1:${APP_PORT}:${APP_PORT}"
-      - "${APP_PORT}:${APP_PORT}"
+  # weather:
+  #   container_name: weather
+  #   image: app
+  #   # environment:
+  #     # - MONGO_DB=${MONGO_DB}
+  #     # - MONGO_COLLECTION=${MONGO_COLLECTION}
+  #     # - MONGO_URL=${MONGO_URL}
+  #     # - APP_PORT=${APP_PORT}
+  #   restart: always
+  #   build:
+  #     context: app
+  #     target: base
+  #   ports:
+  #     # - "127.0.0.1:${APP_PORT}:${APP_PORT}"
+  #     - "${APP_PORT}:${APP_PORT}"
 
   # nginx:
   #   build: ./nginx/

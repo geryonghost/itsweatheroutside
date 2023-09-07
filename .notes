@@ -2,7 +2,7 @@ docker compose build
 docker compose up  -d
 
 docker compose down && docker compose build && docker compose up -d
-
+nodemon server.js
 
 Local Environment
 brew install rancher-desktop
@@ -19,7 +19,9 @@ npm install axios
 npm install dotenv
 npm install -g ejs-lint
 npm install swiper
-
+# npm install -D tailwindcss
+# npx tailwindcss init
+npm install -g nodemon
 
 
 Currently obtaining 7 days forecast. Determine how to get hourly and more than 7 days
