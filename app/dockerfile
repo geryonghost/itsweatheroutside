@@ -8,4 +8,8 @@ RUN rm -rf node_modules
 
 COPY . .
 
-CMD ["node", "./server.js"]
+RUN npm ci
+
+RUN npm install -g nodemon
+
+CMD ["nodemon", "./server.js"]
