@@ -48,6 +48,9 @@ app.post('/', async (req, res) => {
 
     try {
       forecast = await getWeatherNoDB(query);
+      // Process the data to only pass the necessary data??
+      // Create both Celsius and Farenheit which should make it easier on the other side to not require conversion
+      
       res.render('index', {forecast});
     }
     catch (error) {
