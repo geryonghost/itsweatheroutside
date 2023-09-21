@@ -107,6 +107,7 @@ async function getWeatherNoDB(search_query) {
 
     mapdata = mapdata_results.data;
     console.log(mapdata[0].lat + ',' + mapdata[0].lon)
+    console.log(mapdata[0].addresstype + ', ' + mapdata[0].name)
 
     if (isEmptyObject(mapdata)) {
       console.error('Error in the query value');
@@ -125,6 +126,8 @@ async function getWeatherNoDB(search_query) {
 
   lat = mapdata[0].lat;
   lon = mapdata[0].lon;
+  addresstype = mapdata[0].addresstype
+  addressname = mapdata[0].name
 
   // Get weather forecast
   const weather_forecast_api = 'https://api.weather.gov/points/'
@@ -163,6 +166,8 @@ async function getWeatherNoDB(search_query) {
       "query": search_query,
       "lat": lat,
       "lon": lon,
+      "addresstype": addresstype,
+      "addressname": addressname,
       "forecasturl": forecasturl,
       "forecastfrom": now,
     };
