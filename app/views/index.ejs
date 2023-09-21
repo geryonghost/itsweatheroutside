@@ -43,6 +43,10 @@
             });
             return formattedDate;
         }
+        function formatUnitCode(unitcode) {
+            const unit = unitcode.substring(unitcode.lastIndexOf(':') + 1)
+            return unit
+        }
         function celsiusToFahrenheit(celsius) {
             const fahrenheit = (celsius * 9/5) + 32;
             return fahrenheit;
@@ -116,7 +120,7 @@
         
         if (locals.forecast && locals.forecast.length > 0) {
             showForecast = true
-            forecastalerts = forecast[0].forcastalers
+            forecastalerts = forecast[0].forecastalerts
             forecasthourly = forecast[0].forecasthourly
             forecastweekly = forecast[0].forecastweekly
             griddata = forecast[0].griddata
@@ -153,12 +157,46 @@
         </div>
         <br />
         <% if (showForecast == true) { %>
+            <div style="text-align: center;">
+                <h3><%= forecast[0].addressname %></h3>
+                <h5>Timezone (<%= timezone %>)</h5>
+                <h5>Elevation (<%= Math.round(griddata.elevation.value) %><%= formatUnitCode(griddata.elevation.unitCode) %>)</h5>
+            </div>
+            <% if (forecastalerts && forecastalerts.length > 0) {%>
+                <h3>Alerts</h3>
+                
+                <% forecastalerts.forEach((alerts) => { %>
+                    <ul>
+                        <li>
+                            Starts: <%= formatDate(alerts.properties.onset)%> <%= formatTime(alerts.properties.onset) %>
+                        </li>
+                        <li>
+                            Expires <%= formatDate(alerts.properties.expires)%> <%= formatTime(alerts.properties.expires) %>
+                        </li>
+                        <li>
+                            Area Affected:<br />
+                            <%= alerts.properties.areaDesc %>
+                        </li>
+                        <li>
+                            <%= alerts.properties.senderName %>
+                        </li>
+                        <li>
+                            <%= alerts.properties.headline %>
+                        </li>
+                        <li>
+                            <%= alerts.properties.description %>
+                        </li>
+                        <li>
+                            <%= alerts.properties.instruction %>
+                        </li>
+                    </ul>
+                    
+                <% }) %>
+            <% } %>    
+        
         <div style="text-align: center;">
-
-            <h3>Timezone (<%= timezone %>)</h3>
-            <h3>Elevation (<%= griddata.elevation.value %> <%= griddata.elevation.unitCode %>)</h3>
             <p>Ski/Snowboard View, Surfing View, ...</p>
-            <h3>Alerts</h3>
+
             ALERTS ARE NOT BEING DISPLAYED AT THIS TIME<br /><br />
             
             GridData (Perhaps it will be easier to manipulate this instead of using multiple API calls)<br /><br />
@@ -261,6 +299,7 @@
                 <div class="swiper-button-next"></div>
             </div>
         </div>
+        Forecast is from <%= formatDate(forecast[0].forecastfrom) %> <%= formatTime(forecast[0].forecastfrom) %>
         <% } %>
         <br />
         <div style="text-align: center;">
