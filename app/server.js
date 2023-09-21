@@ -139,11 +139,11 @@ async function getWeatherNoDB(search_query) {
     console.error('Error fetching forecast URL', err);
   }
     
-  let now, forecastweekly_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
+  let now, forecastdaily_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
   try {
     now = new Date().toISOString();
-    console.log("Requesting Weekly Forecast");
-    forecastweekly_results = await axios.get(forecasturl + '/forecast');
+    console.log("Requesting Daily Forecast");
+    forecastdaily_results = await axios.get(forecasturl + '/forecast');
     console.log("Requesting Hourly Forecast");
     forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly');
     console.log("Requesting Grid");
@@ -167,12 +167,12 @@ async function getWeatherNoDB(search_query) {
       "forecastfrom": now,
     };
 
-    let forecastweekly_json = {"forecastweekly" : forecastweekly_results.data.properties.periods};
+    let forecastdaily_json = {"forecastdaily" : forecastdaily_results.data.properties.periods};
     let forecasthourly_json = {"forecasthourly" : forecasthourly_results.data.properties.periods};
     let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
     let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
  
-    const db_data = { ...document, ...forecastweekly_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
+    const db_data = { ...document, ...forecastdaily_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
 
     weather_forecast = [db_data];
 
@@ -285,11 +285,11 @@ async function getWeatherDB(search_query) {
       }
     }
     
-    let now, forecastweekly_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
+    let now, forecastdaily_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
     try {
       now = new Date().toISOString();
       console.log("Requesting Weekly Forecast");
-      forecastweekly_results = await axios.get(forecasturl + '/forecast');
+      forecastdaily_results = await axios.get(forecasturl + '/forecast');
       console.log("Requesting Hourly Forecast");
       forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly');
       console.log("Requesting Grid");
@@ -313,12 +313,12 @@ async function getWeatherDB(search_query) {
         "forecastfrom": now,
       };
   
-      let forecastweekly_json = {"forecastweekly" : forecastweekly_results.data.properties.periods};
+      let forecastdaily_json = {"forecastdaily" : forecastdaily_results.data.properties.periods};
       let forecasthourly_json = {"forecasthourly" : forecasthourly_results.data.properties.periods};
       let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
       let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
    
-      const db_data = { ...document, ...forecastweekly_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
+      const db_data = { ...document, ...forecastdaily_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
   
       if (update_mongodb != true) {
         console.log('Inserting forecast into MongoDB'); 
