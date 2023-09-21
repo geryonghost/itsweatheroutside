@@ -118,9 +118,9 @@
             showForecast = true
             forecastalerts = forecast[0].forcastalers
             forecasthourly = forecast[0].forecasthourly
-            forecastweekly = forecast[0].forecastweekly
+            forecastdaily = forecast[0].forecastdaily
             griddata = forecast[0].griddata
-            timezone = forecast[0].forecastweekly[0].startTime.substring(forecast[0].forecastweekly[0].startTime.length - 6)
+            timezone = forecast[0].forecastdaily[0].startTime.substring(forecast[0].forecastdaily[0].startTime.length - 6)
             
             dailyhighs = getDailyHighs(forecasthourly)
             dailylows = getDailyLows(forecasthourly)
@@ -160,15 +160,10 @@
             <p>Ski/Snowboard View, Surfing View, ...</p>
             <h3>Alerts</h3>
             ALERTS ARE NOT BEING DISPLAYED AT THIS TIME<br /><br />
-            
-            GridData (Perhaps it will be easier to manipulate this instead of using multiple API calls)<br /><br />
+    
             Todays temperatures<br />
 
-            <br />
-            <h3>Daily Highs</h3>
-            <%=  dailyhighs %>
-            <h3>Daily Lows</h3>
-            <%= dailylows %>
+Perhaps instead of depending on the daily forecast we calculate dawn/dusk and use the hourly to determine the high/lows. Then we can use the daily for the actual forecast descriptions.
            
             <br /><br />
             
@@ -226,20 +221,44 @@
                 <div class="swiper-button-next"></div>
             </div>
         </div>
+        
+            <h3>Daily Highs</h3>
+            <%=  dailyhighs %>
+            <h3>Daily Lows</h3>
+            <%= dailylows %>
 
         <div style="text-align: center;">
-            <h3>7 Day Forecast(<%= forecast[0].forecastweekly.length %>)</h3>
+            <h3>7 Day Forecast(<%= forecast[0].forecastdaily.length %>)</h3>
             <div class="swiper" id="swiper-7day">
                 <div class="swiper-wrapper">
               <%
                 if (showForecast == true) {
                   forecast.forEach((type) => {
-                    type.forecastweekly.forEach((weekly) => {
+                    type.forecastdaily.forEach((weekly) => {
               %>
                     <div class="swiper-slide">
-                        <%= weekly.name %><br />
+                        <%= weekly.name %> (<%= formatDate(weekly.startTime) %><br />
                         <img src="<%= weekly.icon.replace('medium','large') %>" /><br />
-                        <strong><%= weekly.temperature %>&#176; <%= weekly.temperatureUnit %></strong><br />
+                        <strong><%= weekly.temperature %>&#176; <%= weekly.temperatureUnit %>
+                        <% 
+                            for (let i = 0; i < dailyhighs.length; i++) {
+                                if (dailyhighs[i][0] == formatDate(weekly.startTime)) {
+                        %>
+                                    at <%= dailyhighs[i][2] %>
+                        <%
+                                }
+                            }
+                            for (let i = 1; i < dailylows.length; i++) {
+                                overnightdate = new Date(weekly.startTime)
+                                overnightdate = formatDate(overnightdate.setDate(overnightdate.getDate() + 1))
+                                if ((dailylows[i][0] == overnightdate)) {
+                        %>
+                                    at <%= dailylows[i][2] %>
+                        <%
+                                }
+                            }
+                        %>
+                        </strong><br />
                         <% if (weekly.probabilityOfPrecipitation.value > 0) { %>
                             <%= weekly.probabilityOfPrecipitation.value %>% chance of precipitation<br />
                         <% } %>
