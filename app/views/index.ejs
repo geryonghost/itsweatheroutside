@@ -18,13 +18,15 @@
         <!-- Swiper CSS -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
+        <script src="js/scripts.js"></script>
+
     <title>Weather</title>
 
     <!-- Include Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
     <%
-        function formatDate(dateTimeString) {
+        function formatDateComparison(dateTimeString) {
             const date = new Date(dateTimeString);
             const formattedDate = date.toLocaleString('en-US', {
                 month: 'numeric',
@@ -33,7 +35,7 @@
             });
             return formattedDate;
         }
-        function formatTime(dateTimeString) {
+        function formatTimeComparison(dateTimeString) {
             const date = new Date(dateTimeString);
             const formattedDate = date.toLocaleString('en-US', {
                 hour: 'numeric',
@@ -42,6 +44,16 @@
                 <!-- timeZoneName: 'short', -->
             });
             return formattedDate;
+        }
+        function formatDate(dateTimeString) {
+            const date = new Date(dateTimeString)
+            const formattedDate = date.toLocaleDateString()
+            return formattedDate
+        }
+        function formatTime(dateTimeString) {
+            const date = new Date(dateTimeString)
+            const formattedDate = date.toLocaleTimeString()
+            return formattedDate
         }
         function formatUnitCode(unitcode) {
             const unit = unitcode.substring(unitcode.lastIndexOf(':') + 1)
@@ -68,15 +80,15 @@
             let dailyhighs = []
             for (let i = 0; i < daysDifference + 1; i++) {
                 const newdate = new Date()
-                dailyhighs[i] = [formatDate(newdate.setDate(today.getDate() + i)),-999,000]
+                dailyhighs[i] = [formatDateComparison(newdate.setDate(today.getDate() + i)),-999,000]
             }  
 
             forecasthourly.forEach((hourly) => {
-                let forecastdate = formatDate(hourly.startTime)
+                let forecastdate = formatDateComparison(hourly.startTime)
                 for (let i = 0; i < daysDifference + 1; i++) {
                     if (forecastdate == dailyhighs[i][0]) {
                         if (hourly.temperature > dailyhighs[i][1]) { 
-                            dailyhighs[i] = [forecastdate,hourly.temperature,formatTime(hourly.startTime)]
+                            dailyhighs[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
                         }
                     }
                 } 
@@ -97,15 +109,15 @@
             let dailylows = []
             for (let i = 0; i < daysDifference + 1; i++) {
                 const newdate = new Date()
-                dailylows[i] = [formatDate(newdate.setDate(today.getDate() + i)),999,000]
+                dailylows[i] = [formatDateComparison(newdate.setDate(today.getDate() + i)),999,000]
             }  
 
             forecasthourly.forEach((hourly) => {
-                let forecastdate = formatDate(hourly.startTime)
+                let forecastdate = formatDateComparison(hourly.startTime)
                 for (let i = 0; i < daysDifference + 1; i++) {
                     if (forecastdate == dailylows[i][0]) {
                         if (hourly.temperature < dailylows[i][1]) { 
-                            dailylows[i] = [forecastdate,hourly.temperature,formatTime(hourly.startTime)]
+                            dailylows[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
                         }
                     }
                 } 
@@ -157,8 +169,11 @@
         </div>
         <br />
         <% if (showForecast == true) { %>
-            <div style="text-align: center;">
-                <h3><%= forecast[0].addressname %></h3>
+            <div style="text-align: center; border-style: dotted;">
+                <h2><%= forecast[0].addressname %></h2>
+                <h3><%= forecasthourly[0].temperature %>&#176; <%= forecasthourly[0].temperatureUnit %></h3><span style="color:red;">&#8595;</span><span style="color:green";>&#8593;</span>
+                
+                <h4><%= forecasthourly[0].shortForecast %></h4>
                 <h5>Timezone (<%= timezone %>)</h5>
                 <h5>Elevation (<%= Math.round(griddata.elevation.value) %><%= formatUnitCode(griddata.elevation.unitCode) %>)</h5>
             </div>
@@ -168,10 +183,10 @@
                 <% forecastalerts.forEach((alerts) => { %>
                     <ul>
                         <li>
-                            Starts: <%= formatDate(alerts.properties.onset)%> <%= formatTime(alerts.properties.onset) %>
+                            Starts: <%= formatDateComparison(alerts.properties.onset)%> <%= formatTime(alerts.properties.onset) %>
                         </li>
                         <li>
-                            Expires <%= formatDate(alerts.properties.expires)%> <%= formatTime(alerts.properties.expires) %>
+                            Expires <%= formatDateComparison(alerts.properties.expires)%> <%= formatTime(alerts.properties.expires) %>
                         </li>
                         <li>
                             Area Affected:<br />
