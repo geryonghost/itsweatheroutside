@@ -8,6 +8,10 @@ const mongodb = require('mongodb'); // Used to connect to MongoDB
 const bodyParser = require('body-parser'); // Used to handle HTML post
 const { render } = require('ejs');
 
+const app_domain = 'myweatherapp.com'
+const app_email = 'contact@myweatherapp.com'
+const user_agent = '(' + app_domain + ',' + app_email + ')'
+
 // const api_weather = process.env.API_WEATHER;
 // const api_openstreetmap = process.env.API_OPENSTREETMAP;
 
@@ -70,15 +74,15 @@ app.post('/', async (req, res) => {
 
 
 // Function to convert Celsius to Fahrenheit
-function celsiusToFahrenheit(celsius) {
-  const fahrenheit = (celsius * 9/5) + 32;
-  return fahrenheit;
-}
+// function celsiusToFahrenheit(celsius) {
+//   const fahrenheit = (celsius * 9/5) + 32;
+//   return fahrenheit;
+// }
 // Function to convert Fahrenheit to Celsius
-function fahrenheitToCelsius(fahrenheit) {
-  const celsius = (fahrenheit - 32) * 5/9;
-  return celsius;
-}
+// function fahrenheitToCelsius(fahrenheit) {
+//   const celsius = (fahrenheit - 32) * 5/9;
+//   return celsius;
+// }
 // Function to detect empty JSON responses
 function isEmptyObject(obj) {
   return !Object.keys(obj).length;
@@ -101,7 +105,7 @@ async function getWeatherNoDB(search_query) {
             'accept-language': 'en',
             'countrycodes':'us',
             'limit':1,
-            'email':'support@domain.com'
+            'email':app_email
         }
     });
 
@@ -136,7 +140,9 @@ async function getWeatherNoDB(search_query) {
   
   console.log("Getting Forecast URL");
   try {
-    const results = await axios.get(weather_forecast_api + lat + ',' + lon);
+    const results = await axios.get(weather_forecast_api + lat + ',' + lon, {
+      headers: { user_agent }
+    });
     forecasturl = results.data.properties.forecastGridData;
   } catch (err) {
     console.error('Error fetching forecast URL', err);
@@ -144,15 +150,22 @@ async function getWeatherNoDB(search_query) {
     
   let now, forecastdaily_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
   try {
-    now = new Date().toISOString();
-    console.log("Requesting Daily Forecast");
-    forecastdaily_results = await axios.get(forecasturl + '/forecast');
-    console.log("Requesting Hourly Forecast");
-    forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly');
-    console.log("Requesting Grid");
-    forecastgriddata_results = await axios.get(forecasturl);
-    console.log("Requesting Alerts");
+    now = new Date().toISOString()
+    console.log("Requesting Daily Forecast")
+    forecastdaily_results = await axios.get(forecasturl + '/forecast', {
+      headers: { user_agent }
+    })
+    console.log("Requesting Hourly Forecast")
+    forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly', {
+      headers: { user_agent }
+    })
+    console.log("Requesting Grid")
+    forecastgriddata_results = await axios.get(forecasturl, {
+      headers: { user_agent }
+    })
+    console.log("Requesting Alerts")
     forecastalerts_results = await axios.get(weather_alerts_api, {
+      headers: { user_agent },
       params: {
         point: location
       }
