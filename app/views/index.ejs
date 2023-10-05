@@ -6,26 +6,20 @@
     <meta name="description" content="" />
     <meta name="author" content="" />
 
-        <!-- <link rel="icon" type="image/x-icon" href="assets/favicon.ico" /> -->
-        <!-- Font Awesome icons (free version)-->
-        <!-- <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script> -->
-        <!-- Google fonts-->
-        <!-- <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" /> -->
-        <!-- <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" /> -->
-        <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="css/styles.css" rel="stylesheet" />
+    <!-- Core theme CSS -->
+    <link href="css/styles.css" rel="stylesheet" />
 
-        <!-- Swiper CSS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
-
-        <script src="js/scripts.js"></script>
-
-    <title>Weather</title>
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
 
     <!-- Include Swiper JS -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 
+    <title>Easy Weather</title>
+
     <%
+        const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
         function formatDateComparison(dateTimeString) {
             const date = new Date(dateTimeString);
             const formattedDate = date.toLocaleString('en-US', {
@@ -40,8 +34,7 @@
             const formattedDate = date.toLocaleString('en-US', {
                 hour: 'numeric',
                 minute: 'numeric',
-                hour12: true,
-                <!-- timeZoneName: 'short', -->
+                hour12: false,
             });
             return formattedDate;
         }
@@ -169,6 +162,103 @@
         </div>
         <br />
         <% if (showForecast == true) { %>
+            <div>
+                -----------------TESTING--------------------<br /><br />
+                <%
+                    let date = new Date()    
+                    let dayCount = 0
+                    
+                    let day = evening = overnight = []
+                    let dayHigh = eveningHigh = overnightHigh = -999
+                    let dayHighTime = eveningHighTime = overnightHighTime = ""
+                    let dayLow = eveningLow = overnightLow = 999
+                    let dayLowTime = eveningLowTime = overnightLowTime = ""
+                    let dayTrend = eveningTrend = overnightTrend = ""
+                    let dayTrendCount = eveningTrendCount = overnightTrendCount = 0  
+                    
+                    let daily = []
+                %>
+                
+                <% 
+                forecasthourly.forEach((hourly) => {
+                    // Switch dates when the loop progresses to the next date
+                    if (formatDateComparison(hourly.startTime) != formatDateComparison(date)) {
+                        date.setDate(date.getDate() + 1)
+                        dayCount += 1
+                        
+                        day = evening = overnight = []
+                        dayHigh = eveningHigh = overnightHigh = -999
+                        dayHighTime = eveningHighTime = overnightHighTime = ""
+                        dayLow = eveningLow = overnightLow = 999
+                        dayLowTime = eveningLowTime = overnightLowTime = ""
+                        dayTrend = eveningTrend = overnightTrend = ""
+                        dayTrendCount = eveningTrendCount = overnightTrendCount = 0         
+                    }
+
+                    // Day
+                    if (hourly.isDaytime == true ) {
+                        day.push(hourly.temperature)
+                        if (dayHigh < hourly.temperature) { dayHigh = hourly.temperature; dayHighTime = hourly.startTime }
+                        if (dayLow > hourly.temperature) { dayLow = hourly.temperature; dayLowTime = hourly.startTime }
+                        if (dayTrendCount > hourly.temperature) { dayTrend = "down" } else if ( dayTrendCount < hourly.temperature ) { dayTrend = "up" }
+                        dayTrendCount = hourly.temperature
+                    }
+
+                    // Evening
+                    if (hourly.isDaytime == false && formatTimeComparison(hourly.startTime) > "12:00") {
+                        evening.push(hourly.temperature)
+                        if (eveningHigh < hourly.temperature) { eveningHigh = hourly.temperature; eveningHighTime = hourly.startTime }
+                        if (eveningLow > hourly.temperature) { eveningLow = hourly.temperature; eveningLowTime = hourly.startTime }
+                        if (eveningTrendCount > hourly.temperature) { eveningTrend = "down" } else if ( eveningTrendCount < hourly.temperature ) { eveningTrend = "up" }
+                        eveningTrendCount = hourly.temperature
+                    }
+
+                    // Overnight
+                    if (hourly.isDaytime == false && formatTimeComparison(hourly.startTime) < "12:00") {
+                        overnight.push(hourly.temperature)
+                        if (overnightHigh < hourly.temperature) { overnightHigh = hourly.temperature; overnightHighTime = hourly.startTime }
+                        if (overnightLow > hourly.temperature) { overnightLow = hourly.temperature; overnightLowTime = hourly.startTime }
+                        if (overnightTrendCount > hourly.temperature) { overnightTrend = "down" } else if ( overnightTrendCount < hourly.temperature ) { overnightTrend = "up" }
+                        overnightTrendCount = hourly.temperature
+                    }
+
+                    daily[dayCount] = [
+                        weekday[date.getDay()],         // Day of the week
+                        dayHigh,                        // Daytime High
+                        formatTime(dayHighTime),        // Daytime High Time
+                        dayLow,                         // Daytime Low
+                        formatTime(dayLowTime),         // Daytime Low Time
+                        dayTrend,                       // Daytime Trend
+                        eveningHigh,                    // Evening High
+                        formatTime(eveningHighTime),    // Evening High Time
+                        eveningLow,                     // Evening Low
+                        formatTime(eveningLowTime),     // Evening Low Time
+                        eveningTrend,                   // Evening Trend
+                        overnightHigh,                  // Overnight High
+                        formatTime(overnightHighTime),  // Overnight High Time
+                        overnightLow,                   // Overnight Low
+                        formatTime(overnightLowTime),   // Overnight Low Time
+                        overnightTrend                  // Overnight Trend
+                        ]
+
+                        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        // This needs to be paired with forecastdaily to create a useful array to loop through
+                        // Possible using the current date and time information of this loop to lookup in...
+                        // forecastweekly[0].startTime and forecastweekly[0].isDayTime
+                        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                })
+
+                // Temporary Loop to display current daily values
+                for (let i = 0; i < daily.length; i++) {
+                %>
+                <%= daily[i] %><br />
+                <% } %>
+                -----------------TESTING--------------------<br /><br />
+            </div>
+
+
+
+
             <div style="text-align: center; border-style: dotted;">
                 <h2><%= forecast[0].addressname %></h2>
                 <h3><%= forecasthourly[0].temperature %>&#176; <%= forecasthourly[0].temperatureUnit %></h3><span style="color:red;">&#8595;</span><span style="color:green";>&#8593;</span>
@@ -343,8 +433,6 @@ Perhaps instead of depending on the daily forecast we calculate dawn/dusk and us
         <% if (locals.forecast && locals.forecast.length > 0) { %>
         <hr>
         <%= //JSON.stringify(forecast) %>
-        <% } else { %>
-        <p>No forecast is available</p>
         <% } %>
         
     <script>
