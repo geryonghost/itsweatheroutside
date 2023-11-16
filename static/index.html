@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+
+        <!-- Core theme CSS -->
+        <!-- <link href="css/styles.css" rel="stylesheet" /> -->
+
+        <!-- Swiper CSS -->
+        <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" /> -->
+
+        <!-- Include Swiper JS -->
+        <!-- <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script> -->
+
+        <script src="js/functions.js"></script>
+
+        <title>Skyy Weather - Weather so accurate, the second "Y" is for you.</title>
+    </head>
+
+    <body>
+        <div style="text-align: left;">
+            Skyy Weather -  Weather so accurate, the second "Y" is for you.
+        </div>
+        <br />
+        <div style="text-align: center;">
+            <form style="display: inline-block;">
+                <input type="text" id="searchquery" name="q" required />
+                <button type="button" id="searchbutton">Search</button><br />
+                <div id="searchhints">
+                    <small>
+                        60601 (Least accurate)<br />
+                        Chicago IL (More accurate) <br />
+                        233 S Wacker Dr Chicago IL (Most accurate)
+                    </small>
+                </div> 
+            </form>
+        </div>
+        <br />
+        <div id="currentforecast"></div>
+    </body> 
+
+    <script src="js/eventhandlers.js"></script>
+
+</html>
