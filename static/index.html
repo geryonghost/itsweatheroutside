@@ -15,21 +15,23 @@
         <!-- Include Swiper JS -->
         <!-- <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script> -->
 
+        <script src="js/forecasts.js"></script>
         <script src="js/functions.js"></script>
 
-        <title>Skyy Weather - Weather so accurate, the second "Y" is for you.</title>
+        <title>Foxy Weather - Sunny and clear, but freezing cold</title>
     </head>
 
     <body>
         <div style="text-align: left;">
-            Skyy Weather -  Weather so accurate, the second "Y" is for you.
+            <img src="img/logo_full.jpeg" style="vertical-align: middle;" height="50px" />
+            <span style="vertical-align: middle;"> Foxy Weather</span>
         </div>
         <br />
         <div style="text-align: center;">
             <form style="display: inline-block;">
                 <input type="text" id="searchquery" name="q" required />
-                <button type="button" id="searchbutton">Search</button><br />
-                <div id="searchhints">
+                <button type="submit" id="searchbutton">Search</button><br />
+                <div id="searchhints" style="display: none; visibility: hidden;">
                     <small>
                         60601 (Least accurate)<br />
                         Chicago IL (More accurate) <br />
@@ -38,10 +40,34 @@
                 </div> 
             </form>
         </div>
-        <br />
-        <div id="currentforecast"></div>
+        <div id="alerts" style="display: none; visibility: hidden;">Alerts</div>
+        <div id="currentforecast" style="display: none; visibility: hidden;">
+            <div style="text-align: center; border-style: dotted; max-width: 300px; margin: 10px auto; padding: 0px;">
+                <img id="currenticon" src="" />
+                <h2 id="currenttemperature">52&#176; <span style="color:blue;">&#8595;</span></h2>
+                <table style="margin:auto; width:50%;">
+                    <tr>
+                        <td style="width: 50%; text-align: center;">H:<span id="currenthightemp">65</span>&#176;</td>
+                        <td style="width: 50%; text-align: center;">L:<span id="currentlowtemp">30</span>&#176;</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 50%; text-align: center;"><span id="currenthightime">7:00 pm</span></td>
+                        <td style="width: 50%; text-align: center;"><span id="currentlowtime">1:00 am</span></td>
+                    </tr>
+                </table>
+                <h4 id="currentshortdescription"></h4>
+                <p style="text-align: center;">
+                    Forecast for <span id="currentaddressname">60532</span><br />
+                    Timezone: <span id="currenttimezone">Timezone: Central</span><br />
+                    Elevation: <span id="currentelevation">Elevation: 50'</span>
+                </p>
+            </div>
+        </div>
+        <div style="text-align: center; margin: 10px auto; padding: 0px;">
+            <p>If the weather is foxy then it's “misleadingly bright”—or, in other words, sunny and clear, but freezing cold.</p>
+        </div>
     </body> 
 
-    <script src="js/eventhandlers.js"></script>
+    <script src="js/post_page_load.js"></script>
 
 </html>
