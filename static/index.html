@@ -22,23 +22,33 @@
     </head>
 
     <body>
-        <div style="text-align: left;">
-            <img src="img/logo_full.jpeg" style="vertical-align: middle;" height="50px" />
-            <span style="vertical-align: middle;"> Foxy Weather</span>
+        <div style="text-align: center; max-width: 400px; margin: 0 auto; padding: 0px;">
+            <table style="margin: auto;">
+                <tr>
+                    <td>
+                        <img src="img/logo_full.jpeg" style="vertical-align: middle;" height="50px" /><br />
+                        Foxy Weather
+                    </td>
+                    <td style="text-align: right;">
+                        <form style="display: inline-block;">
+                            <input type="text" id="searchquery" name="q" required />
+                            <button type="submit" id="searchbutton">Search</button><br />
+                        </form>
+                    </td>
+                </tr>
+            </table>
+            <div id="searchhints" style="display: none; visibility: hidden;">
+                <small>
+                    60601 (Least accurate)<br />
+                    Chicago IL (More accurate) <br />
+                    233 S Wacker Dr Chicago IL (Most accurate)
+                </small>
+            </div>
+            <div id="searcherror" style="text-align: center; color: white; background-color: red; margin: 10px auto; padding: 0px; display: none; visibility: hidden;"></div>
         </div>
         <br />
         <div style="text-align: center;">
-            <form style="display: inline-block;">
-                <input type="text" id="searchquery" name="q" required />
-                <button type="submit" id="searchbutton">Search</button><br />
-                <div id="searchhints" style="display: none; visibility: hidden;">
-                    <small>
-                        60601 (Least accurate)<br />
-                        Chicago IL (More accurate) <br />
-                        233 S Wacker Dr Chicago IL (Most accurate)
-                    </small>
-                </div> 
-            </form>
+
         </div>
         <div id="alerts" style="display: none; visibility: hidden;">Alerts</div>
         <div id="currentforecast" style="display: none; visibility: hidden;">
