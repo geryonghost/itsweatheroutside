@@ -30,11 +30,22 @@ async function getWeather(query) {
                 
                 console.log(lat + ',' + lon)
                 console.log(addresstype + ', ' + addressname)
+            } else {
+                const searcherror = document.getElementById("searcherror")
+                searcherror.innerHTML = "Unable to get location, please refresh the page"
+                searcherror.style.visibility = "Visible"
+                searcherror.style.display = "Block"
             }
 
         } catch (error) {
             console.log("Unable to reach the service. Query:" + query)
             console.error(error)
+
+            const searcherror = document.getElementById("searcherror")
+            searcherror.innerHTML = "Unable to get location, please try a new search"
+            searcherror.style.visibility = "Visible"
+            searcherror.style.display = "Block"
+            return
         }
     } else {
         console.error("No query was submitted")
@@ -57,6 +68,11 @@ async function getWeather(query) {
                 } else {
                     console.log("Error missing forecast URL")
                 }
+            } else {
+                const searcherror = document.getElementById("searcherror")
+                searcherror.innerHTML = "Unable to get forecast, please refresh the page"
+                searcherror.style.visibility = "Visible"
+                searcherror.style.display = "Block"
             }
         } catch (err) {
             console.error('Error fetching forecast URL', err)

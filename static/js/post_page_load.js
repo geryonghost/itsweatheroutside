@@ -1,11 +1,4 @@
-// // Search form
-// const searchquery = document.getElementById("searchquery");
-// const searchbutton = document.getElementById("searchbutton");
-
-// searchbutton.addEventListener("click", function() {
-//     getWeather(searchquery.value)
-// });   
-
+// Read the query string
 var queryString = window.location.search;
 
 // Create a URLSearchParams object
@@ -15,6 +8,8 @@ var searchParams = new URLSearchParams(queryString);
 const query = searchParams.get('q');
 if (query != "" && query != undefined && query != null) {
     getWeather(query)
+    const searchquery = document.getElementById("searchquery")
+    searchquery.value = query
 } else {
     const searchhints = document.getElementById("searchhints")
     searchhints.style.display="block"
