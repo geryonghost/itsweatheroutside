@@ -1,4 +1,4 @@
-# Skyy Weather
+# It's Weather Outside
 I find the general usefulness of weather apps to be less than useful. Sometimes it is the ever changing forecast or simplicity like the Highs and Lows that don't occur at the typical time (Highs in the middle of the night and lows during the day). I have started this as a pet project to:
 
 1. Solve my pet peeves with other weather apps. I hope to allow crowd sourced requests.
