@@ -123,6 +123,10 @@ async function getWeather(query) {
     
     // Display the current forecast in HTML
     currentForecast(addressname, timezone, elevation, forecasthourly)
+
+    const waiting = document.getElementById("waiting")
+    waiting.style.display="none"
+    waiting.style.visibility="hidden"
 }
 
 function getDailyHighs(forecasthourly) {
