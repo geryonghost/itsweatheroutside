@@ -1,533 +1,439 @@
-// require('dotenv').config();
-
-// const async = require('async');
-const axios = require('axios'); // Used to connect to remote APIs
-const express = require('express'); // Used to display HTML pages
-const mongodb = require('mongodb'); // Used to connect to MongoDB
-
+const express = require("express") // Used to display HTML pages
 const bodyParser = require('body-parser'); // Used to handle HTML post
-const { render } = require('ejs');
+const { render } = require("ejs")
+const axios = require('axios'); // Used to connect to remote APIs
 
-const app_domain = 'myweatherapp.com'
-const app_email = 'contact@myweatherapp.com'
-const user_agent = '(' + app_domain + ',' + app_email + ')'
-
-// const api_weather = process.env.API_WEATHER;
-// const api_openstreetmap = process.env.API_OPENSTREETMAP;
-
-// const db_connection = process.env.DB_CONNECTION;
-// const db_name = process.env.DB_NAME;
-// const db_collection = process.env.DB_COLLECTION;
+const app_domain = "itsweatheroutside.com"
+const app_email = "webmaster@itsweatheroutside.com"
+const user_agent = "(" + app_domain + "," + app_email + ")"
 
 const app = express();
 const app_port = 3000;
 
-// Set the view engine to EJS
-app.set('view engine', 'ejs');
-
-// Static files
-app.use(express.static('public'));
-
-// Handle the form submission
+app.set('view engine', 'ejs')
+app.use(express.static('public'))
 app.use(bodyParser.urlencoded({ extended: false }));
 
-// Start the server
 app.listen(app_port, () => {
-  console.log(`Server listening on port ${app_port}`);
-});
+    console.log(`Server listening on port ${app_port}`)
+})
 
+// Default view of the site
 app.get('/', async (req, res) => {
-  res.render('index', {});
-});
+    let query = req.query.q;
 
-app.post('/', async (req, res) => {
-  let query = req.body.search;
-  let forecast
-  if (query != '') {
-    query = query.replace(/\s+/g, ' ') //Replace multiple spaces with a single space
-    query = query.trim();
-    query = query.toLowerCase();
-    query = query.replace('.','').replace(',','');
-    query = query.replace('lane','ln');
-
-    try {
-      forecast = await getWeatherNoDB(query);
-      // Process the data to only pass the necessary data??
-      // Create both Celsius and Farenheit which should make it easier on the other side to not require conversion
-      
-      res.render('index', {forecast});
-    }
-    catch (error) {
-      console.error(error)
-      res.status(500).json({ success: false, error: error.message });
-    }    
-  }
-}); 
-
-// import Swiper JS
-// const swiperapp = require('swiper');
-// // import Swiper styles
-// const swipercss = require('swiper/css');
-
-// const swiper = new swiperapp(...);
-
-
-
-// Function to convert Celsius to Fahrenheit
-// function celsiusToFahrenheit(celsius) {
-//   const fahrenheit = (celsius * 9/5) + 32;
-//   return fahrenheit;
-// }
-// Function to convert Fahrenheit to Celsius
-// function fahrenheitToCelsius(fahrenheit) {
-//   const celsius = (fahrenheit - 32) * 5/9;
-//   return celsius;
-// }
-// Function to detect empty JSON responses
-function isEmptyObject(obj) {
-  return !Object.keys(obj).length;
-}
-// Function to get number of JSON responses
-function lengthObject(obj) {
-  return Object.keys(obj).length;
-}
-
-async function getWeatherNoDB(search_query) {
-  let mapdata;
-  
-  const query = search_query;
-  console.log(query);
-  try {
-    const mapdata_results = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-            q: query,
-            'format': 'json',
-            'accept-language': 'en',
-            'countrycodes':'us',
-            'limit':1,
-            'email':app_email
-        }
-    });
-
-    mapdata = mapdata_results.data;
-    console.log(mapdata[0].lat + ',' + mapdata[0].lon)
-    console.log(mapdata[0].addresstype + ', ' + mapdata[0].name)
-
-    if (isEmptyObject(mapdata)) {
-      console.error('Error in the query value');
-      return;
-    } else if (lengthObject(mapdata) > 1) {
-      console.error('Query is returning multiple results');
-      console.log(Object.keys(mapdata).length);
-      console.log(mapdata);
-      return;
+    if (query == "" || query == undefined) {
+        res.render('index', {})
     } else {
-      console.log('Querying OpenStreetMapData successful');
+        try {
+            forecast = await getWeather(query);
+            // console.log(forecast)
+            res.render('index', {forecast});
+        } catch (error) {
+            console.error(error)
+            res.status(500).json({ success: false, error: error.message });
+        }  
     }
-  } catch (error) {
-    console.error('Error fetching openstreetmap data', error);
-  }
+})
 
-  lat = mapdata[0].lat;
-  lon = mapdata[0].lon;
-  addresstype = mapdata[0].addresstype
-  addressname = mapdata[0].name
 
-  // Get weather forecast
-  const weather_forecast_api = 'https://api.weather.gov/points/'
-  const weather_alerts_api = 'https://api.weather.gov/alerts/active'  
-  const location = lat + ',' + lon;
-  
-  console.log("Getting Forecast URL");
-  try {
-    const results = await axios.get(weather_forecast_api + lat + ',' + lon, {
-      headers: { user_agent }
-    });
-    forecasturl = results.data.properties.forecastGridData;
-  } catch (err) {
-    console.error('Error fetching forecast URL', err);
-  }
-    
-  let now, forecastdaily_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
-  try {
-    now = new Date().toISOString()
-    console.log("Requesting Daily Forecast")
-    forecastdaily_results = await axios.get(forecasturl + '/forecast', {
-      headers: { user_agent }
-    })
-    console.log("Requesting Hourly Forecast")
-    forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly', {
-      headers: { user_agent }
-    })
-    console.log("Requesting Grid")
-    forecastgriddata_results = await axios.get(forecasturl, {
-      headers: { user_agent }
-    })
-    console.log("Requesting Alerts")
-    forecastalerts_results = await axios.get(weather_alerts_api, {
-      headers: { user_agent },
-      params: {
-        point: location
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching weather data:', error);
-  }
+// Get the weather forecast from the searchquery
+async function getWeather(query) {
+    query = query.replace(/\s+/g, ' ')              // Replace multiple spaces with a single space
+    query = query.trim();                           // Remove whitespace at both ends
+    query = query.toLowerCase();                    // Convert to lower case
+    query = query.replace('.','').replace(',','');  // Replace . with nothing and , with nothing
+    query = query.replace('lane','ln');             // Replace lane with ln
 
-  try {
-    const document = {
-      "query": search_query,
-      "lat": lat,
-      "lon": lon,
-      "addresstype": addresstype,
-      "addressname": addressname,
-      "forecasturl": forecasturl,
-      "forecastfrom": now,
-    };
+    let now, weather_forecast
 
-    let forecastdaily_json = {"forecastdaily" : forecastdaily_results.data.properties.periods};
-    let forecasthourly_json = {"forecasthourly" : forecasthourly_results.data.properties.periods};
-    let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
-    let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
- 
-    const db_data = { ...document, ...forecastdaily_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
+    // Get the latitude and longitude from Nominatim
+    if (query != "") {
+        console.log("Getting latitude and longitude")
+        try {
+            const mapdata_results = await axios.get('https://nominatim.openstreetmap.org/search', {
+                params: {
+                    q: query,
+                    'format': 'json',
+                    'accept-language': 'en',
+                    'countrycodes':'us',
+                    'limit':1,
+                    'email':app_email
+                }
+            })
 
-    weather_forecast = [db_data];
+            if (mapdata_results.status == 200) {
+                mapdata = await mapdata_results.data;
+                
+                lat = mapdata[0].lat
+                lon = mapdata[0].lon
+                addresstype = mapdata[0].addresstype
+                addressname = mapdata[0].name
+                
+                console.log(lat + ',' + lon)
+                console.log(addresstype + ', ' + addressname)
+            } else {
+                console.log("Query results in bad response status")
+            }
 
-  } catch (err) {
-    console.error(err);
-  }
-
-  return weather_forecast;
-}
-
-async function getWeatherDB(search_query) {
-  // Connect to MongoDB
-  let mongo_client, db, collection
-  try {
-    console.log('Connecting to MongoDB');
-    mongo_client = await mongodb.MongoClient.connect('mongodb://127.0.0.1:27017', { useNewUrlParser: true });
-    console.log('Connected to MongoDB');
-    db = mongo_client.db('weather');
-    console.log('MongoDB DB is set');
-    collection = db.collection('forecasts');
-    console.log('MongoDB Collection is set');
-  } catch (error) {
-    console.error('Error connecting to MongoDB', error);
-  }
-
-  // Query MongoDB for existing forecast
-  let weather_forecast, forecastdifference, update_mongodb
-  let lat, lon, forecasturl
-
-  console.log('Querying the collection with: ' + search_query);
-  try {
-    const query = { 'query': search_query };
-    console.log(query);
-    weather_forecast = await collection.find(query).toArray();
-  } catch (err) {
-    console.error(err);
-  }
-  
-  console.log('There are ' + lengthObject(weather_forecast) + ' results');
-
-  if (!isEmptyObject(weather_forecast)) {
-    const now = new Date();
-    const forecastfrom = new Date(weather_forecast[0].forecastfrom)
-    forecastdifference = Math.floor(Math.abs(forecastfrom - now) / (1000 * 60));
-
-    lat = weather_forecast[0].lat
-    lon = weather_forecast[0].lon
-    forecasturl = weather_forecast[0].forecasturl
-    update_mongodb = true
-  }
-
-  // If MongoDB does not have a matching query, lookup the lat/lon
-  if (isEmptyObject(weather_forecast)) {
-    let mapdata;
-    
-    console.log('Collection is empty, requesting lat/lon');
-
-    const query = search_query;
-    console.log(query);
-    try {
-      const mapdata_results = await axios.get('https://nominatim.openstreetmap.org/search', {
-          params: {
-              q: query,
-              'format': 'json',
-              'accept-language': 'en',
-              'countrycodes':'us',
-              'limit':1,
-              'email':'support@domain.com'
-          }
-      });
-  
-      mapdata = mapdata_results.data;
-      console.log(mapdata[0].lat + ',' + mapdata[0].lon)
-  
-      if (isEmptyObject(mapdata)) {
-        console.error('Error in the query value');
-        return;
-      } else if (lengthObject(mapdata) > 1) {
-        console.error('Query is returning multiple results');
-        console.log(Object.keys(mapdata).length);
-        console.log(mapdata);
-        return;
-      } else {
-        console.log('Querying OpenStreetMapData successful');
-      }
-    } catch (error) {
-      console.error('Error fetching openstreetmap data', error);
-    }
-
-    lat = mapdata[0].lat;
-    lon = mapdata[0].lon;
-
-  }
-  
-  // Get weather forecast
-  if (isEmptyObject(weather_forecast) || forecastdifference > 5) {
-    console.log("Forecast needs to be udpated");
-
-    const weather_forecast_api = 'https://api.weather.gov/points/'
-    const weather_alerts_api = 'https://api.weather.gov/alerts/active'  
-    const location = lat + ',' + lon;
-    
-    if (update_mongodb != true) {
-      console.log("Getting Forecast URL");
-      try {
-        const results = await axios.get(weather_forecast_api + lat + ',' + lon);
-        forecasturl = results.data.properties.forecastGridData;
-      } catch (err) {
-        console.error('Error fetching forecast URL', err);
-      }
-    }
-    
-    let now, forecastdaily_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
-    try {
-      now = new Date().toISOString();
-      console.log("Requesting Weekly Forecast");
-      forecastdaily_results = await axios.get(forecasturl + '/forecast');
-      console.log("Requesting Hourly Forecast");
-      forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly');
-      console.log("Requesting Grid");
-      forecastgriddata_results = await axios.get(forecasturl);
-      console.log("Requesting Alerts");
-      forecastalerts_results = await axios.get(weather_alerts_api, {
-        params: {
-          point: location
+        } catch (error) {
+            console.log("Unable to reach the service. Query:" + query)
+            console.error(error)
         }
-      });
-    } catch (error) {
-      console.error('Error fetching weather data:', error);
+    } else {
+        console.error("No query was submitted")
     }
-  
-    try {
-      const document = {
-        "query": search_query,
-        "lat": lat,
-        "lon": lon,
-        "forecasturl": forecasturl,
-        "forecastfrom": now,
-      };
-  
-      let forecastdaily_json = {"forecastdaily" : forecastdaily_results.data.properties.periods};
-      let forecasthourly_json = {"forecasthourly" : forecasthourly_results.data.properties.periods};
-      let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
-      let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
-   
-      const db_data = { ...document, ...forecastdaily_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
-  
-      if (update_mongodb != true) {
-        console.log('Inserting forecast into MongoDB'); 
-        await collection.insertOne(db_data);
-      } else {
-        console.log('Updating forecast in MongoDB');
-        const filter = { "query": search_query }
-        await collection.replaceOne(filter, db_data);
-      }
 
-      weather_forecast = [db_data];
+    if (lat != "" && lon != "") {
+        // Get weather api urls
+        weather_forecast_api = 'https://api.weather.gov/points/'
+        weather_alerts_api = 'https://api.weather.gov/alerts/active/?point='  
+        location = lat + ',' + lon;
+
+        console.log("Getting Forecast URL")
+        try {
+            const results = await axios.get(weather_forecast_api + lat + ',' + lon, { headers: { user_agent } })
+            if (results.status == 200) {
+                forecasturl = await results.data.properties.forecastGridData
+            } else {
+                console.log("Query results in bad response status")
+            }
+        } catch (err) {
+            console.error('Error fetching forecast URL', err)
+        }
+    } else {
+        console.error("Latitude and/or Longitude were not acquired")
+    }
+
+    if (forecasturl != "" && forecasturl != undefined) {
+        // Get the weather forecasts
+        try {
+            console.log("Requesting Daily Forecast")
+            forecastdaily_results = await axios.get(forecasturl + '/forecast', { headers: { user_agent } })
+        
+            console.log("Requesting Hourly Forecast")
+            forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly', { headers: { user_agent } })
+        
+            console.log("Requesting Grid Raw Forecast")
+            forecastgriddata_results = await axios.get(forecasturl, { headers: { user_agent } })
+        
+            console.log("Requesting Alerts")
+            forecastalerts_results = await axios.get(weather_alerts_api + location, { headers: { user_agent } })
+        } catch (error) {
+            console.error('Error fetching weather data:', error)
+        }
+    }
+
+    if (forecastdaily_results != undefined && forecasthourly_results != undefined && forecastalerts_results != undefined && forecastgriddata_results != undefined) {
+        forecastdaily = await forecastdaily_results.data.properties.periods
+        // console.log("Forecast Daily")
+        // console.log(forecastdaily)
+        
+        forecasthourly = await forecasthourly_results.data.properties.periods
+        // console.log("Forecast Hourly")
+        // console.log(forecasthourly)
+        
+        forecastalerts = await forecastalerts_results.data.features
+        // console.log("Forecast Alerts")
+        // console.log(forecastalerts)
+
+        forecastgriddata = await forecastgriddata_results.data.properties
+        // console.log("Forecast Grid")
+        // console.log(forecastgriddata)
+
+        timezone = getTimeZoneName(forecastdaily[0].startTime.substring(forecastdaily[0].startTime.length - 6))
+        elevation = Math.round(forecastgriddata.elevation.value) + formatUnitCode(forecastgriddata.elevation.unitCode)
+    }
+    
+    // Display the current forecast in HTML
+    const currentforecast = currentForecast(forecasthourly)
+    const hourlyforecast = hourlyForecast(forecasthourly)
+    const dailyforecast = dailyForecast(forecastdaily)
+    // hourlyForecast(forecasthourly)
+    // dailyForecast(forecasthourly, forecastdaily)
+// console.log(currentforecast)
+
+    now = new Date().toISOString()
+    try {
+        const document = {
+            "forecastfrom": now,
+            "query": query,
+            "lat": lat,
+            "lon": lon,
+            "addresstype": addresstype,
+            "addressname": addressname,
+            "forecasturl": forecasturl,
+            "timezone": timezone,
+            "elevation": elevation
+        }
+
+
+        // addressname, timezone, elevation, currentforecast
+        const forecastcurrent_json = {"forecastcurrent" : currentforecast}
+        const forecasthourly_json = {"forecasthourly" : hourlyforecast}
+        const forecastdaily_json = {"forecastdaily" : dailyforecast}
+        // let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
+        // let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
+    
+        // const db_data = { ...document, ...currentforecast, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
+        const db_data = { ...document, ...forecastcurrent_json, ...forecasthourly_json, ...forecastdaily_json }
+        // const db_data = { ...document, ...forecastcurrent_json}
+
+        weather_forecast = db_data;
 
     } catch (err) {
-      console.error(err);
+        console.error(err);
     }
 
-  }
-
-    mongo_client.close();
     return weather_forecast;
 }
 
-// async function getCollection(search_query) {
-//   // Connect to MongoDB
-//   let mongo_client, db, collection
-//   try {
-//     console.log('Connecting to MongoDB');
-//     mongo_client = new mongodb.MongoClient('mongodb://mongo:27017', { useNewUrlParser: true });
-//     console.log('Connected to MongoDB');
-//     db = mongo_client.db('weather');
-//     console.log('MongoDB DB is set');
-//     collection = db.collection('forecasts');
-//     console.log('MongoDB Collection is set');
-//   } catch (error) {
-//     console.error('Error connecting to MongoDB', error);
-//   }
-
-//   console.log('Querying the collection with: ' + search_query);
-//   try {
-//     query = { 'query': search_query };
-//     console.log(query)
-//     const results = await collection.find(query).toArray();
-
-//     console.log('There are ' + lengthObject(results) + ' results');
-
-//     let forecastdifference
-
-//     if (!isEmptyObject(results)) {
-//       const now = new Date();
-//       const forecastfrom = new Date(results[0].forecastfrom)
-//       forecastdifference = Math.floor(Math.abs(forecastfrom - now) / (1000 * 60));
-
-//       console.log('The forecast is ' + forecastdifference + ' minutes old');
-//     }
-
-//     if (isEmptyObject(results)) {
-//       console.log('Collection is empty, requesting lon/lat');
-//       const weather_results = await getCoordinates(search_query, collection);
-//       return weather_results;
-//     } else if (!isEmptyObject(results) && forecastdifference > 5) {
-//         console.log("Forecast is older than 5 minutes, refreshing");
-//         const lat = results[0].lat;
-//         const lon = results[0].lon;
-//         const forecasturl = results[0].forecasturl;
-//         const forecasthourlyurl = results[0].forecasthourlyurl;
-//         const forecastgriddataurl = results[0].forecastgriddataurl;
-
-//         const weather_results = await getWeather(collection, search_query, lat, lon, forecasturl);
-//         return weather_results;      
-//     } else {
-//         console.log('Forecast is current, do nothing');
-//         return results;
-//     }
-//     mongo_client.close();
-//   } catch (error) {
-//     console.error('Error querying and rendering HTML', error);
-//     res.status(500).send('Internal Server Error');
-//   }
-  
-// }
-
-// // Function to get Lat and Lon for defined Query
-// async function getCoordinates(search_query, collection) {
-//   openstreetmap_api = 'https://nominatim.openstreetmap.org/search';
-
-//   query = search_query;
-//   console.log(query);
-//   try {
-//     const mapdata_results = await axios.get(openstreetmap_api, {
-//         params: {
-//             q: query,
-//             format: 'json',
-//             'accept-language': 'en',
-//             'countrycodes':'us',
-//             limit:1,
-//             email:'support@domain.com'
-//         }
-//     });
-
-//     const mapdata = mapdata_results.data;
-//     console.log(mapdata[0].lat + ',' + mapdata[0].lon)
-
-//     if (isEmptyObject(mapdata)) {
-//       console.error('Error in the query value');
-//       return;
-//     } else if (lengthObject(mapdata) > 1) {
-//       console.error('Query is returning multiple results');
-//       console.log(Object.keys(mapdata).length);
-//       console.log(mapdata);
-//       return;
-//     } else {
-//       console.log('Querying OpenStreetMapData successful');
-//       const lat = mapdata[0].lat;
-//       const lon = mapdata[0].lon;
-//       const forecasturl = 0;
-
-//       const weather_results = await getWeather(collection, search_query, lat, lon, forecasturl);
-//       return weather_results;
-//     }
-//   } catch (error) {
-//     console.error('Error fetching openstreetmap data', error);
-//   }
-// // });
-// }
-
-// Function to use forecasturl or lat and lon to obtain forecast
-// async function getWeather(collection, search_query, lat, lon, forecasturl) {
-//   const weather_forecast_api = 'https://api.weather.gov/points/'
-//   const weather_alerts_api = 'https://api.weather.gov/alerts/active'
-
-//   const location = lat + ',' + lon;
-//   let newquery = false;
-//   // let forecastobservationstationsurl, forecastzoneurl, forecastcountyurl, forecastfireweatherzoneurl
-
-//   // If forecasturl, forecasthourlyurl, and forecastgriddataurl are set skip this step.
-//   if (forecasturl == 0) {
+// Forecast functions
+function currentForecast(forecasthourly) {
+    let temperaturesum = temperatureaverage = 0
     
-//     try {
-//       newquery = true;
-//       const results = await axios.get(weather_forecast_api + lat + ',' + lon);
-//       forecasturl = results.data.properties.forecastGridData;
-//     } catch (err) {
-//       console.error('Error fetching forecast URL', err);
-//     }
-//   }
-  
-//   let now, forecast_results, forecasthourly_results, forecastgriddata_results, forecastalerts_results 
-//   try {
-//     now = new Date().toISOString();
-//     forecast_results = await axios.get(forecasturl + '/forecast');
-//     forecasthourly_results = await axios.get(forecasturl + '/forecast/hourly');
-//     forecastgriddata_results = await axios.get(forecasturl);
-//     forecastalerts_results = await axios.get(weather_alerts_api, {
-//       params: {
-//         point: location
-//       }
-//     });
-//   } catch (error) {
-//     console.error('Error fetching weather data:', error);
-//   }
-
-//   try {
-//     const document = {
-//       "query": search_query,
-//       "lat": lat,
-//       "lon": lon,
-//       "forecasturl": forecasturl,
-//       "forecastfrom": now,
-//     };
-
-//     let forecast_json = {"forecast" : forecast_results.data.properties.periods};
-//     let forecasthourly_json = {"forecasthourly" : forecasthourly_results.data.properties.periods};
-//     let forecastalerts_json = {"forecastalerts" : forecastalerts_results.data.features};
-//     let forecastgriddata_json = {"griddata" : forecastgriddata_results.data.properties};
- 
-//     const db_data = { ...document, ...forecast_json, ...forecasthourly_json, ...forecastalerts_json, ...forecastgriddata_json };
-
-//     if (newquery == true) {
-//       console.log('Inserting forecast into MongoDB'); 
-//       await collection.insertOne(db_data);
-//     } else {
-//       console.log('Updating forecast in MongoDB');
-//       const filter = { "query": search_query }
-//       await collection.replaceOne(filter, db_data);
-//     }
+    const dailyhigh = getDailyHighs(forecasthourly)
+    const dailylow = getDailyLows(forecasthourly)
     
-//     return db_data;
+    // Determines the temperature trend based in the average for the next 10 hours
+    for (let i = 0; i < 10; i++) {
+        temperaturesum += forecasthourly[i].temperature
+    }
+    temperatureaverage = temperaturesum / 10
+    
+    if (forecasthourly[0].temperature > temperatureaverage) { 
+        currenttemperaturetrend = "<span style=\"color:blue;\">&#8595;</span>"
+    } else if (forecasthourly[0].temperature < temperatureaverage) { 
+        currenttemperaturetrend = "<span style=\"color:green\";>&#8593;</span>"
+    }
 
-//   } catch (error) {
-//     console.error('Error processing data with MongoDB', error);
-//   }
-// }
+    const i = 0
+    const currentforecast = {
+        "startdate": formatDate(forecasthourly[i].startTime),
+        "starttime": formatTime(forecasthourly[i].startTime),
+        "dewpoint": forecasthourly[i].dewpoint.value.toFixed(2),
+        "dewpointunit": formatUnitCode(forecasthourly[i].dewpoint.unitCode),
+        "humidity": forecasthourly[i].relativeHumidity.value,
+        "humidityunit": formatUnitCode(forecasthourly[i].relativeHumidity.unitCode),
+        "hightemp": dailyhigh[0][1],
+        "lowtemp": dailylow[0][1],
+        "hightime": formatTimeFromComparison(dailyhigh[0][2]),
+        "lowtime": formatTimeFromComparison(dailylow[0][2]),
+        "icon": forecasthourly[i].icon.replace(",0?size=small","?size=medium"),
+        "isdaytime": forecasthourly[i].isDaytime,
+        "probabilityofprecipitation": forecasthourly[i].probabilityOfPrecipitation.value,
+        "probabilityofprecipitationunit": formatUnitCode(forecasthourly[i].probabilityOfPrecipitation.unitCode),
+        "shortforecast": forecasthourly[i].shortForecast,
+        "temperature": forecasthourly[i].temperature,
+        "temperatureunit": forecasthourly[i].temperatureUnit,
+        "temperaturetrend": currenttemperaturetrend,
+        "winddirection": forecasthourly[i].windDirection,
+        "windspeed": forecasthourly[i].windSpeed
+    }
 
-//////////////////////////////////////////////////////////////////////////////////////////
+    return currentforecast
+}
+
+function hourlyForecast(forecasthourly) {
+    let hourlyforecast = []
+
+    for (let i = 0; i < forecasthourly.length; i++) {
+        hourlyforecast[i] = {
+            "startdate": formatDate(forecasthourly[i].startTime),
+            "starttime": formatTime(forecasthourly[i].startTime),
+            "dewpoint": forecasthourly[i].dewpoint.value.toFixed(2),
+            "dewpointunit": formatUnitCode(forecasthourly[i].dewpoint.unitCode),
+            "humidity": forecasthourly[i].relativeHumidity.value,
+            "humidityunit": formatUnitCode(forecasthourly[i].relativeHumidity.unitCode),
+            // "hightemp": dailyhigh[0][1],
+            // "lowtemp": dailylow[0][1],
+            // "hightime": formatTimeFromComparison(dailyhigh[0][2]),
+            // "lowtime": formatTimeFromComparison(dailylow[0][2]),
+            "icon": forecasthourly[i].icon.replace(",0?size=small","?size=medium"),
+            "isdaytime": forecasthourly[i].isDaytime,
+            "probabilityofprecipitation": forecasthourly[i].probabilityOfPrecipitation.value,
+            "probabilityofprecipitationunit": formatUnitCode(forecasthourly[i].probabilityOfPrecipitation.unitCode),
+            "shortforecast": forecasthourly[i].shortForecast,
+            "temperature": forecasthourly[i].temperature,
+            "temperatureunit": forecasthourly[i].temperatureUnit,
+            // "temperaturetrend": currenttemperaturetrend,
+            "winddirection": forecasthourly[i].windDirection,
+            "windspeed": forecasthourly[i].windSpeed
+        }
+    }
+
+    return hourlyforecast
+}
+
+function dailyForecast(forecastdaily) {
+    let dailyforecast = []
+
+    for (let i = 0; i < forecastdaily.length; i++) {
+        dailyforecast[i] = {
+            "startime": formatTime(forecastdaily[i].startTime),
+            "endtime": formatTime(forecastdaily[i].endTime),
+            "startdate": formatDate(forecastdaily[i].startTime),
+            "enddate": formatDate(forecastdaily[i].endTime),
+            "detailedforecast": forecastdaily[i].detailedForecast,
+            "dewpoint": forecastdaily[i].dewpoint.value.toFixed(2),
+            "dewpointunit": formatUnitCode(forecastdaily[i].dewpoint.unitCode),
+            "humidity": forecastdaily[i].relativeHumidity.value,
+            "humidityunit": formatUnitCode(forecastdaily[i].relativeHumidity.unitCode),
+            "name": forecastdaily[i].name,
+            "icon": forecastdaily[i].icon.replace(",0?size=small","?size=medium"),
+            "isDaytime": forecastdaily.isDaytime,
+            "probabilityofprecipitation": forecastdaily[i].probabilityOfPrecipitation.value,
+            "probabilityofprecipitationunit": formatUnitCode(forecastdaily[i].probabilityOfPrecipitation.unitCode),
+            "shortforecast": forecastdaily[i].shortForecast,
+            "temperature": forecastdaily[i].temperature,
+            "temperatureunit": forecastdaily[i].temperatureUnit,
+            // "temperaturetrend": currenttemperaturetrend,
+            "winddirection": forecastdaily[i].windDirection,
+            "windspeed": forecastdaily[i].windSpeed
+        }
+    }
+
+    return dailyforecast
+}
+
+// Forecast Helper Functions
+function getDailyHighs(forecasthourly) {
+    let today = new Date()
+    let lastdate = new Date(forecasthourly[forecasthourly.length - 1].startTime)
+
+    today.setHours(0,0,0,0)
+    lastdate.setHours(0,0,0,0)
+
+    let timeDifference = lastdate.getTime() - today.getTime()
+    let daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+
+    let dailyhighs = []
+    for (let i = 0; i < daysDifference + 1; i++) {
+        const newdate = new Date()
+        dailyhighs[i] = [formatDateComparison(newdate.setDate(today.getDate() + i)),-999,0o0]
+    }  
+
+    forecasthourly.forEach((hourly) => {
+        let forecastdate = formatDateComparison(hourly.startTime)
+        for (let i = 0; i < daysDifference + 1; i++) {
+            if (forecastdate == dailyhighs[i][0]) {
+                if (hourly.temperature > dailyhighs[i][1]) { 
+                    dailyhighs[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
+                }
+            }
+        } 
+    })
+    return dailyhighs
+}
+
+function getDailyLows(forecasthourly) {
+    let today = new Date()
+    let lastdate = new Date(forecasthourly[forecasthourly.length - 1].startTime)
+
+    today.setHours(0,0,0,0)
+    lastdate.setHours(0,0,0,0)
+
+    let timeDifference = lastdate.getTime() - today.getTime()
+    let daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
+
+    let dailylows = []
+    for (let i = 0; i < daysDifference + 1; i++) {
+        const newdate = new Date()
+        dailylows[i] = [formatDateComparison(newdate.setDate(today.getDate() + i)),999,0o0]
+    }  
+
+    forecasthourly.forEach((hourly) => {
+        let forecastdate = formatDateComparison(hourly.startTime)
+        for (let i = 0; i < daysDifference + 1; i++) {
+            if (forecastdate == dailylows[i][0]) {
+                if (hourly.temperature < dailylows[i][1]) { 
+                    dailylows[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
+                }
+            }
+        } 
+    })
+    return dailylows
+}
+
+// Content functions
+function formatDate(dateTimeString) {
+    const date = new Date(dateTimeString)
+    const formattedDate = date.toLocaleDateString()
+    return formattedDate
+}
+
+function formatDateComparison(dateTimeString) {
+    const date = new Date(dateTimeString);
+    const formattedDate = date.toLocaleString('en-US', {
+        month: 'numeric',
+        day: 'numeric',
+        year: 'numeric',
+    });
+    return formattedDate;
+}
+
+function formatTime(dateTimeString) {
+    const date = new Date(dateTimeString)
+    const formattedDate = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    return formattedDate
+}
+
+function formatTimeComparison(dateTimeString) {
+    const date = new Date(dateTimeString);
+    const formattedDate = date.toLocaleString('en-US', {
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false,
+    });
+    return formattedDate;
+}
+
+function formatTimeFromComparison(dateTimeString) {
+    const [hours, minutes] = dateTimeString.split(':');
+    const dateObject = new Date();
+    
+    dateObject.setHours(parseInt(hours, 10));
+    dateObject.setMinutes(parseInt(minutes, 10));
+    
+    const formattedDate = dateObject.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return formattedDate
+}
+
+function formatUnitCode(unitcode) {
+    let unit = unitcode.substring(unitcode.lastIndexOf(':') + 1)
+
+    if (unit == "degC") { unit = "C" }
+    if (unit == "percent") { unit = "%"}
+
+    return unit
+}
+
+function getTimeZoneName(offset) {
+    switch(offset) {
+        case "-05:00":
+            timezone = "Eastern"
+            break;
+        case "-06:00":
+            timezone = "Central"
+            break;
+        case "-07:00":
+            timezone = "Mountain"
+            break;
+        case "-08:00":
+            timezone = "Pacific"
+            break;
+        default:
+          timezone = ""
+    }
+    return timezone
+}
+
+function celsiusToFahrenheit(celsius) {
+  const fahrenheit = (celsius * 9/5) + 32;
+  return fahrenheit;
+}
+
+function fahrenheitToCelsius(fahrenheit) {
+  const celsius = (fahrenheit - 32) * 5/9;
+  return celsius;
+}
