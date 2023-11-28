@@ -3,3 +3,9 @@
 app/node_modules
 *.env
 *.notes
+docker-compose.yml
+forecast
+save
+nodemon.json
+*.old
+app/public/css
