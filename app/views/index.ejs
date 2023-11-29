@@ -1,8 +1,15 @@
 <% 
-forecast = locals.forecast
-currentforecast = forecast.forecastcurrent
-hourlyforecast = forecast.forecasthourly
-dailyforecast = forecast.forecastdaily
+if (locals.forecast != "" && locals.forecast != undefined) {
+    forecast = locals.forecast
+    currentforecast = forecast.forecastcurrent
+    hourlyforecast = forecast.forecasthourly
+    dailyforecast = forecast.forecastdaily
+} else {
+    forecast = ""
+    currentforecast = ""
+    hourlyforecast = ""
+    dailyforecast = ""
+}
 %>
 
 <!DOCTYPE html>
@@ -53,7 +60,7 @@ dailyforecast = forecast.forecastdaily
             </tr>
         </table>
         <% 
-        if (forecast == "" || forecast == undefined) {
+        if (forecast == "") {
         %>
         <div id="searchhints">
             <small>
@@ -78,7 +85,7 @@ dailyforecast = forecast.forecastdaily
     <!-- ALERTS -->
     <div id="alerts" style="display: none; visibility: hidden;">Alerts</div>
     <% 
-    if (currentforecast != "" && currentforecast != undefined) {
+    if (currentforecast != "") {
     %>
     <!-- CURRENT FORECAST -->
     <div id="currentforecast">
@@ -106,7 +113,7 @@ dailyforecast = forecast.forecastdaily
     <% } %>
 
     <% 
-    if (hourlyforecast != "" && hourlyforecast != undefined) {
+    if (hourlyforecast != "") {
     %>
     <!-- HOURLY FORECAST -->
     <div id="hourlyforecast">
@@ -140,7 +147,7 @@ dailyforecast = forecast.forecastdaily
     %>
 
     <% 
-    if (dailyforecast != "" && dailyforecast != undefined) {
+    if (dailyforecast != "") {
     %>
     <!-- DAILY FORECAST -->
     <div id="dailyforecast">
