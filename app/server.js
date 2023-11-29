@@ -210,15 +210,18 @@ function currentForecast(forecasthourly) {
     const i = 0
     const currentforecast = {
         "startdate": formatDate(forecasthourly[i].startTime),
-        "starttime": formatTime(forecasthourly[i].startTime),
+        // "starttime": formatTime(forecasthourly[i].startTime),
+        "starttime": (forecasthourly[i].startTime),
         "dewpoint": forecasthourly[i].dewpoint.value.toFixed(2),
         "dewpointunit": formatUnitCode(forecasthourly[i].dewpoint.unitCode),
         "humidity": forecasthourly[i].relativeHumidity.value,
         "humidityunit": formatUnitCode(forecasthourly[i].relativeHumidity.unitCode),
         "hightemp": dailyhigh[0][1],
         "lowtemp": dailylow[0][1],
-        "hightime": formatTimeFromComparison(dailyhigh[0][2]),
-        "lowtime": formatTimeFromComparison(dailylow[0][2]),
+        // "hightime": formatTimeFromComparison(dailyhigh[0][2]),
+        // "lowtime": formatTimeFromComparison(dailylow[0][2]),
+        "hightime": (dailyhigh[0][2]),
+        "lowtime": (dailylow[0][2]),
         "icon": forecasthourly[i].icon.replace(",0?size=small","?size=medium"),
         "isdaytime": forecasthourly[i].isDaytime,
         "probabilityofprecipitation": forecasthourly[i].probabilityOfPrecipitation.value,
@@ -240,7 +243,8 @@ function hourlyForecast(forecasthourly) {
     for (let i = 0; i < forecasthourly.length; i++) {
         hourlyforecast[i] = {
             "startdate": formatDate(forecasthourly[i].startTime),
-            "starttime": formatTime(forecasthourly[i].startTime),
+            // "starttime": formatTime(forecasthourly[i].startTime),
+            "starttime": (forecasthourly[i].startTime),
             "dewpoint": forecasthourly[i].dewpoint.value.toFixed(2),
             "dewpointunit": formatUnitCode(forecasthourly[i].dewpoint.unitCode),
             "humidity": forecasthourly[i].relativeHumidity.value,
@@ -272,8 +276,10 @@ function dailyForecast(forecastdaily) {
         dailyforecast[i] = {
             "startime": formatTime(forecastdaily[i].startTime),
             "endtime": formatTime(forecastdaily[i].endTime),
-            "startdate": formatDate(forecastdaily[i].startTime),
-            "enddate": formatDate(forecastdaily[i].endTime),
+            // "startdate": formatDate(forecastdaily[i].startTime),
+            // "enddate": formatDate(forecastdaily[i].endTime),
+            "startdate": (forecastdaily[i].startTime),
+            "enddate": (forecastdaily[i].endTime),
             "detailedforecast": forecastdaily[i].detailedForecast,
             "dewpoint": forecastdaily[i].dewpoint.value.toFixed(2),
             "dewpointunit": formatUnitCode(forecastdaily[i].dewpoint.unitCode),
@@ -318,7 +324,8 @@ function getDailyHighs(forecasthourly) {
         for (let i = 0; i < daysDifference + 1; i++) {
             if (forecastdate == dailyhighs[i][0]) {
                 if (hourly.temperature > dailyhighs[i][1]) { 
-                    dailyhighs[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
+                    // dailyhighs[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
+                    dailyhighs[i] = [forecastdate,hourly.temperature,(hourly.startTime)]
                 }
             }
         } 
@@ -347,7 +354,8 @@ function getDailyLows(forecasthourly) {
         for (let i = 0; i < daysDifference + 1; i++) {
             if (forecastdate == dailylows[i][0]) {
                 if (hourly.temperature < dailylows[i][1]) { 
-                    dailylows[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
+                    // dailylows[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
+                    dailylows[i] = [forecastdate,hourly.temperature,(hourly.startTime)]
                 }
             }
         } 
