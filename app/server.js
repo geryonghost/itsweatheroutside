@@ -170,7 +170,7 @@ async function getWeather(query) {
             "addresstype": addresstype,
             "addressname": addressname,
             "forecasturl": forecasturl,
-            "timezone": timezone,
+            "timezone": timezone[1],
             "elevation": elevation
         }
 
@@ -248,6 +248,7 @@ function hourlyForecast(forecasthourly) {
         hourlyforecast[i] = {
             "startdate": formatDate(forecasthourly[i].startTime),
             "starttime": formatTime(forecasthourly[i].startTime),
+            "starttime2": forecasthourly[i].startTime,
             "dewpoint": forecasthourly[i].dewpoint.value.toFixed(2),
             "dewpointunit": formatUnitCode(forecasthourly[i].dewpoint.unitCode),
             "humidity": forecasthourly[i].relativeHumidity.value,
@@ -355,7 +356,6 @@ function getDailyLows(forecasthourly) {
             if (forecastdate == dailylows[i][0]) {
                 if (hourly.temperature < dailylows[i][1]) { 
                     dailylows[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
-                    // dailylows[i] = [forecastdate,hourly.temperature,(hourly.startTime)]
                 }
             }
         } 
@@ -382,7 +382,7 @@ function formatDate(dateTimeString) {
 
 function formatDateComparison(dateTimeString) {
     const date = new Date(dateTimeString);
-    const formattedDate = date.toLocaleString('en-US', {
+    const formattedDate = date.toLocaleString(clientlocale, {
         month: 'numeric',
         day: 'numeric',
         year: 'numeric',
@@ -392,28 +392,37 @@ function formatDateComparison(dateTimeString) {
 
 function formatTime(dateTimeString) {
     const date = new Date(dateTimeString)
-    const formattedDate = date.toLocaleTimeString([clientlocale], { hour: 'numeric', minute: '2-digit' })
+    const options = {
+        timeZone: getTimeZoneName(dateTimeString.substring(dateTimeString.length - 6))[0],
+        hour: 'numeric', 
+        minute: '2-digit'
+    }
+    const formattedDate = date.toLocaleTimeString(clientlocale, options)
+
     return formattedDate
 }
 
 function formatTimeComparison(dateTimeString) {
-    const date = new Date(dateTimeString);
-    const formattedDate = date.toLocaleString('en-US', {
+    const date = new Date(dateTimeString)
+    const formattedDate = date.toLocaleString(clientlocale, {
         hour: 'numeric',
         minute: 'numeric',
         hour12: false,
-    });
+    })
     return formattedDate;
 }
 
 function formatTimeFromComparison(dateTimeString) {
-    const [hours, minutes] = dateTimeString.split(':');
-    const dateObject = new Date();
+    const [hours, minutes] = dateTimeString.split(':')
+    const dateObject = new Date()
     
-    dateObject.setHours(parseInt(hours, 10));
-    dateObject.setMinutes(parseInt(minutes, 10));
+    dateObject.setHours(parseInt(hours, 10))
+    dateObject.setMinutes(parseInt(minutes, 10))
     
-    const formattedDate = dateObject.toLocaleTimeString([clientlocale], { hour: 'numeric', minute: '2-digit' });
+    const formattedDate = dateObject.toLocaleTimeString(clientlocale, { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+    })
     return formattedDate
 }
 
@@ -427,21 +436,33 @@ function formatUnitCode(unitcode) {
 }
 
 function getTimeZoneName(offset) {
+    let timezone = []
     switch(offset) {
         case "-05:00":
-            timezone = "Eastern"
+            timezone[0] = "America/New_York"
+            timezone[1] = "Eastern"
             break;
         case "-06:00":
-            timezone = "Central"
+            timezone[0] = "America/Chicago"
+            timezone[1] = "Central"
             break;
         case "-07:00":
-            timezone = "Mountain"
+            timezone[0] = "America/Denver"
+            timezone[1] = "Mountain"
             break;
         case "-08:00":
-            timezone = "Pacific"
+            timezone[0] = "America/Los_Angeles"
+            timezone[1] = "Pacific"
             break;
+        case "-09:00":
+            timezone[0] = "America/Anchorage"
+            timezone[1] = "Alaska"
+        case "-10:00":
+            timezone[0] = "Pacific/Honolulu"
+            timezone[1] = "Hawaii"
         default:
-          timezone = ""
+            timezone[0] = ""
+            timezone[1] = ""
     }
     return timezone
 }
