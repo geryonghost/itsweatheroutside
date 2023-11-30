@@ -248,6 +248,7 @@ function hourlyForecast(forecasthourly) {
         hourlyforecast[i] = {
             "startdate": formatDate(forecasthourly[i].startTime),
             "starttime": formatTime(forecasthourly[i].startTime),
+            "starttime2": forecasthourly[i].startTime,
             "dewpoint": forecasthourly[i].dewpoint.value.toFixed(2),
             "dewpointunit": formatUnitCode(forecasthourly[i].dewpoint.unitCode),
             "humidity": forecasthourly[i].relativeHumidity.value,
