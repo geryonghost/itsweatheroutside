@@ -12,8 +12,6 @@ const app_port = 3000;
 const app_host = '0.0.0.0'
 
 let clientlocale = ''
-console.log(new Date().getTimezoneOffset());
-
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
@@ -172,7 +170,7 @@ async function getWeather(query) {
             "addresstype": addresstype,
             "addressname": addressname,
             "forecasturl": forecasturl,
-            "timezone": timezone,
+            "timezone": timezone[1],
             "elevation": elevation
         }
 
@@ -394,12 +392,23 @@ function formatDateComparison(dateTimeString) {
 }
 
 function formatTime(dateTimeString) {
-    console.log(clientlocale)
     const date = new Date(dateTimeString)
-    const formattedDate = date.toLocaleTimeString(clientlocale, { 
+    const options = {
+        timeZone: getTimeZoneName(dateTimeString.substring(dateTimeString.length - 6))[0],
         hour: 'numeric', 
-        minute: '2-digit' 
-    })
+        minute: '2-digit'
+    }
+
+    // const options = { timeZone: 'America/New_York' };
+    // const timeString = currentDate.toLocaleTimeString('en-US', options);
+    
+
+
+    const formattedDate = date.toLocaleTimeString(clientlocale, options)
+    // { 
+        // hour: 'numeric', 
+        // minute: '2-digit' 
+    // })
     return formattedDate
 }
 
@@ -437,21 +446,33 @@ function formatUnitCode(unitcode) {
 }
 
 function getTimeZoneName(offset) {
+    let timezone = []
     switch(offset) {
         case "-05:00":
-            timezone = "Eastern"
+            timezone[0] = "America/New_York"
+            timezone[1] = "Eastern"
             break;
         case "-06:00":
-            timezone = "Central"
+            timezone[0] = "America/Chicago"
+            timezone[1] = "Central"
             break;
         case "-07:00":
-            timezone = "Mountain"
+            timezone[0] = "America/Denver"
+            timezone[1] = "Mountain"
             break;
         case "-08:00":
-            timezone = "Pacific"
+            timezone[0] = "America/Los_Angeles"
+            timezone[1] = "Pacific"
             break;
+        case "-09:00":
+            timezone[0] = "America/Anchorage"
+            timezone[1] = "Alaska"
+        case "-10:00":
+            timezone[0] = "Pacific/Honolulu"
+            timezone[1] = "Hawaii"
         default:
-          timezone = ""
+            timezone[0] = ""
+            timezone[1] = ""
     }
     return timezone
 }
