@@ -199,8 +199,10 @@ async function getWeather(query) {
 function currentForecast(forecasthourly) {
     let temperaturesum = temperatureaverage = 0
     
-    const dailyhigh = getDailyHighs(forecasthourly)
-    const dailylow = getDailyLows(forecasthourly)
+    // const dailyhigh = getDailyHighs(forecasthourly)
+    // const dailylow = getDailyLows(forecasthourly)
+    const dailyhigh = getTodaysHigh(forecasthourly)
+    const dailylow = getTodaysLow(forecasthourly)
     
     // Determines the temperature trend based in the average for the next 10 hours
     for (let i = 0; i < 10; i++) {
@@ -222,10 +224,12 @@ function currentForecast(forecasthourly) {
         "dewpointunit": formatUnitCode(forecasthourly[i].dewpoint.unitCode),
         "humidity": forecasthourly[i].relativeHumidity.value,
         "humidityunit": formatUnitCode(forecasthourly[i].relativeHumidity.unitCode),
-        "hightemp": dailyhigh[0][1],
-        "lowtemp": dailylow[0][1],
-        "hightime": formatTimeFromComparison(dailyhigh[0][2]),
-        "lowtime": formatTimeFromComparison(dailylow[0][2]),
+        "hightemp": dailyhigh[0],
+        "lowtemp": dailylow[0],
+        "highstart": dailyhigh[1],
+        "highend": dailyhigh[2],
+        "lowstart": dailylow[1],
+        "lowend": dailylow[2],
         "icon": forecasthourly[i].icon.replace(",0?size=small","?size=medium"),
         "isdaytime": forecasthourly[i].isDaytime,
         "probabilityofprecipitation": forecasthourly[i].probabilityOfPrecipitation.value,
@@ -360,6 +364,71 @@ function getDailyLows(forecasthourly) {
         } 
     })
     return dailylows
+}
+
+function getTodaysHigh(forecasthourly) {
+    let today = new Date()
+    
+    now = today.toLocaleTimeString(clientlocale)
+    today = formatDate(today)
+
+    let todayshigh = []
+    todayshigh[0] = -999
+
+    for (let i = 0; i < forecasthourly.length; i++) {
+        if (formatDate(forecasthourly[i].startTime) == today) {
+            console.log(forecasthourly[i].endTime)
+            if (todayshigh[0] < forecasthourly[i].temperature) {
+                if (now < formatTime(forecasthourly[i].startTime)) {
+                    todayshigh = ['','','']
+                } else {
+                    todayshigh = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime),formatTime(forecasthourly[i].endTime)]
+                }
+            } else if (todayshigh[0] == forecasthourly[i].temperature) {
+                if (now < formatTime(forecasthourly[i].startTime)) {
+                    todayshigh = ['','','']
+                } else {
+                    todayshigh[2] = formatTime(forecasthourly[i].endTime)
+                }
+            }
+        } else {
+            break
+        }
+    }
+
+    return todayshigh
+}
+
+function getTodaysLow() {
+    let today = new Date()
+    
+    now = today.toLocaleTimeString(clientlocale)
+    today = formatDate(today)
+
+    let todayslow = []
+    todayslow[0] = 999
+
+    for (let i = 0; i < forecasthourly.length; i++) {
+        if (formatDate(forecasthourly[i].startTime) == today) {
+            if (todayslow[0] > forecasthourly[i].temperature) {
+                if (now > formatTime(forecasthourly[i].startTime)) {
+                    todayslow = ['','','']
+                } else {
+                    todayslow = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime)]
+                }
+            } else if (todayslow[0] == forecasthourly[i].temperature) {
+                if (now > formatTime(forecasthourly[i].startTime)) {
+                    todayslow = ['','','']
+                } else {
+                    todayslow[2] = formatTime(forecasthourly[i].endTime)
+                }
+            }
+        } else {
+            break
+        }
+    }
+
+    return todayslow
 }
 
 // Content functions

@@ -94,12 +94,20 @@ if (locals.forecast != "" && locals.forecast != undefined) {
             <h2><%=currentforecast.temperature%>&#176; <%=currentforecast.temperatureunit%> <%-currentforecast.temperaturetrend%></h2>
             <table style="margin:auto; width:50%;">
                 <tr>
+                    <% if (currentforecast.hightemp != '') { %> 
                     <td style="width: 50%; text-align: center;">H:<%=currentforecast.hightemp%>&#176;</td>
+                    <% } %>
+                    <% if (currentforecast.lowtemp != '') { %> 
                     <td style="width: 50%; text-align: center;">L:<%=currentforecast.lowtemp%>&#176;</td>
+                    <% } %>
                 </tr>
                 <tr>
-                    <td style="width: 50%; text-align: center;"><%=currentforecast.hightime%></td>
-                    <td style="width: 50%; text-align: center;"><%=currentforecast.lowtime%></td>
+                    <% if (currentforecast.hightemp != '') { %> 
+                        <td style="width: 50%; text-align: center;"><%=currentforecast.highstart%> - <%=currentforecast.highend%></td>
+                    <% } %>
+                    <% if (currentforecast.lowtemp != '') { %> 
+                        <td style="width: 50%; text-align: center;"><%=currentforecast.lowtime%> - <%=currentforecast.lowend%></td>
+                    <% } %>
                 </tr>
             </table>
             <h4><%=currentforecast.shortforecast%></h4>
