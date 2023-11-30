@@ -12,6 +12,8 @@ const app_port = 3000;
 const app_host = '0.0.0.0'
 
 let clientlocale = ''
+console.log(new Date().getTimezoneOffset());
+
 
 app.set('view engine', 'ejs')
 app.use(express.static('public'))
@@ -392,29 +394,36 @@ function formatDateComparison(dateTimeString) {
 }
 
 function formatTime(dateTimeString) {
+    console.log(clientlocale)
     const date = new Date(dateTimeString)
-    const formattedDate = date.toLocaleTimeString(clientlocale, { hour: 'numeric', minute: '2-digit' })
+    const formattedDate = date.toLocaleTimeString(clientlocale, { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+    })
     return formattedDate
 }
 
 function formatTimeComparison(dateTimeString) {
-    const date = new Date(dateTimeString);
+    const date = new Date(dateTimeString)
     const formattedDate = date.toLocaleString(clientlocale, {
         hour: 'numeric',
         minute: 'numeric',
         hour12: false,
-    });
+    })
     return formattedDate;
 }
 
 function formatTimeFromComparison(dateTimeString) {
-    const [hours, minutes] = dateTimeString.split(':');
-    const dateObject = new Date();
+    const [hours, minutes] = dateTimeString.split(':')
+    const dateObject = new Date()
     
-    dateObject.setHours(parseInt(hours, 10));
-    dateObject.setMinutes(parseInt(minutes, 10));
+    dateObject.setHours(parseInt(hours, 10))
+    dateObject.setMinutes(parseInt(minutes, 10))
     
-    const formattedDate = dateObject.toLocaleTimeString(clientlocale, { hour: 'numeric', minute: '2-digit' });
+    const formattedDate = dateObject.toLocaleTimeString(clientlocale, { 
+        hour: 'numeric', 
+        minute: '2-digit' 
+    })
     return formattedDate
 }
 
