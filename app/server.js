@@ -382,7 +382,7 @@ function formatDate(dateTimeString) {
 
 function formatDateComparison(dateTimeString) {
     const date = new Date(dateTimeString);
-    const formattedDate = date.toLocaleString('en-US', {
+    const formattedDate = date.toLocaleString(clientlocale, {
         month: 'numeric',
         day: 'numeric',
         year: 'numeric',
@@ -392,13 +392,13 @@ function formatDateComparison(dateTimeString) {
 
 function formatTime(dateTimeString) {
     const date = new Date(dateTimeString)
-    const formattedDate = date.toLocaleTimeString([clientlocale], { hour: 'numeric', minute: '2-digit' })
+    const formattedDate = date.toLocaleTimeString(clientlocale, { hour: 'numeric', minute: '2-digit' })
     return formattedDate
 }
 
 function formatTimeComparison(dateTimeString) {
     const date = new Date(dateTimeString);
-    const formattedDate = date.toLocaleString('en-US', {
+    const formattedDate = date.toLocaleString(clientlocale, {
         hour: 'numeric',
         minute: 'numeric',
         hour12: false,
@@ -413,7 +413,7 @@ function formatTimeFromComparison(dateTimeString) {
     dateObject.setHours(parseInt(hours, 10));
     dateObject.setMinutes(parseInt(minutes, 10));
     
-    const formattedDate = dateObject.toLocaleTimeString([clientlocale], { hour: 'numeric', minute: '2-digit' });
+    const formattedDate = dateObject.toLocaleTimeString(clientlocale, { hour: 'numeric', minute: '2-digit' });
     return formattedDate
 }
 
