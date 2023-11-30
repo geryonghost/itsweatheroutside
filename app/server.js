@@ -356,7 +356,6 @@ function getDailyLows(forecasthourly) {
             if (forecastdate == dailylows[i][0]) {
                 if (hourly.temperature < dailylows[i][1]) { 
                     dailylows[i] = [forecastdate,hourly.temperature,formatTimeComparison(hourly.startTime)]
-                    // dailylows[i] = [forecastdate,hourly.temperature,(hourly.startTime)]
                 }
             }
         } 
@@ -398,17 +397,8 @@ function formatTime(dateTimeString) {
         hour: 'numeric', 
         minute: '2-digit'
     }
-
-    // const options = { timeZone: 'America/New_York' };
-    // const timeString = currentDate.toLocaleTimeString('en-US', options);
-    
-
-
     const formattedDate = date.toLocaleTimeString(clientlocale, options)
-    // { 
-        // hour: 'numeric', 
-        // minute: '2-digit' 
-    // })
+
     return formattedDate
 }
 
