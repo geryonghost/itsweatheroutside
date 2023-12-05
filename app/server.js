@@ -8,7 +8,7 @@ const app_email = "webmaster@itsweatheroutside.com"
 const user_agent = "(" + app_domain + "," + app_email + ")"
 
 const app = express();
-const app_port = 3000;
+const app_port = 3001;
 const app_host = '0.0.0.0'
 
 let clientlocale = ''
@@ -377,19 +377,24 @@ function getTodaysHigh(forecasthourly) {
 
     for (let i = 0; i < forecasthourly.length; i++) {
         if (formatDate(forecasthourly[i].startTime) == today) {
-            console.log(forecasthourly[i].endTime)
+            // console.log(forecasthourly[i].endTime)
+            // console.log(todayshigh[0] + ' ' + forecasthourly[i].temperature)
             if (todayshigh[0] < forecasthourly[i].temperature) {
-                if (now < formatTime(forecasthourly[i].startTime)) {
-                    todayshigh = ['','','']
-                } else {
-                    todayshigh = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime),formatTime(forecasthourly[i].endTime)]
-                }
-            } else if (todayshigh[0] == forecasthourly[i].temperature) {
-                if (now < formatTime(forecasthourly[i].startTime)) {
-                    todayshigh = ['','','']
-                } else {
-                    todayshigh[2] = formatTime(forecasthourly[i].endTime)
-                }
+                // console.log('Here')
+                todayshigh = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime)]
+
+            // if (todayshigh[0] < forecasthourly[i].temperature) {
+            //     if (now < formatTime(forecasthourly[i].startTime)) {
+            //         todayshigh = ['','','']
+            //     } else {
+            //         todayshigh = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime),formatTime(forecasthourly[i].endTime)]
+            //     }
+            // } else if (todayshigh[0] == forecasthourly[i].temperature) {
+            //     if (now < formatTime(forecasthourly[i].startTime)) {
+            //         todayshigh = ['','','']
+            //     } else {
+            //         todayshigh[2] = formatTime(forecasthourly[i].endTime)
+            //     }
             }
         } else {
             break
@@ -411,17 +416,20 @@ function getTodaysLow() {
     for (let i = 0; i < forecasthourly.length; i++) {
         if (formatDate(forecasthourly[i].startTime) == today) {
             if (todayslow[0] > forecasthourly[i].temperature) {
-                if (now > formatTime(forecasthourly[i].startTime)) {
-                    todayslow = ['','','']
-                } else {
-                    todayslow = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime)]
-                }
-            } else if (todayslow[0] == forecasthourly[i].temperature) {
-                if (now > formatTime(forecasthourly[i].startTime)) {
-                    todayslow = ['','','']
-                } else {
-                    todayslow[2] = formatTime(forecasthourly[i].endTime)
-                }
+                console.log('Here')
+                todayslow = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime)]
+            // if (todayslow[0] > forecasthourly[i].temperature) {
+            //     if (now > formatTime(forecasthourly[i].startTime)) {
+            //         todayslow = ['','','']
+            //     } else {
+            //         todayslow = [forecasthourly[i].temperature,formatTime(forecasthourly[i].startTime)]
+            //     }
+            // } else if (todayslow[0] == forecasthourly[i].temperature) {
+            //     if (now > formatTime(forecasthourly[i].startTime)) {
+            //         todayslow = ['','','']
+            //     } else {
+            //         todayslow[2] = formatTime(forecasthourly[i].endTime)
+            //     }
             }
         } else {
             break
