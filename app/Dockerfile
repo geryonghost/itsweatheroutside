@@ -8,6 +8,6 @@ RUN npm install -g npm@10.2.4 && npm install
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["node", "server.js"]
