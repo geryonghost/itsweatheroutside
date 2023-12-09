@@ -112,10 +112,11 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - dev.itsweatheroutside.com
-    secretName: dev-itsweatheroutside-com
+    - itsweatheroutside.com
+    - www.itsweatheroutside.com
+    secretName: www-itsweatheroutside-com
   rules:
-  - host: dev.itsweatheroutside.com
+  - host: www.itsweatheroutside.com
     http:
       paths:
       - pathType: Prefix
