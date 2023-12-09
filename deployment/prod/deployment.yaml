@@ -81,7 +81,7 @@ spec:
       spec:
          containers:
             - name: itsweatheroutside
-              image: localhost:5000/itsweatheroutside:0001.0001
+              image: localhost:5000/itsweatheroutside
               imagePullPolicy: Always
 
 ---
