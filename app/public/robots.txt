@@ -1,2 +1,7 @@
 User-agent: ChatGPT-User
 Disallow: /
+
+User-agent: *
+Disallow: /cdn-cgi/l/email-protection
+
+Sitemap: https://itsweatheroutside.com/sitemap.xml
