@@ -1,0 +1,217 @@
+<%
+if (locals.locationError) {locationError = true} else {locationError = false}
+if (locals.forecastError) {forecastError = true} else {forecastError = false}
+
+if (locals.currentForecast != "" && locals.currentForecast != undefined) {
+    currentForecast = locals.currentForecast
+    hourlyForecast=locals.hourlyForecast
+    dailyForecast=locals.dailyForecast
+    alertsForecast=locals.alertsForecast
+    timerTotal=locals.avgTimer
+} else {
+    location = ""
+    currentForecast = ""
+    hourlyForecast = ""
+    dailyForecast = ""
+    alertsForecast = ""
+    timerTotal = ""
+}
+%>
+
+<%- include('inc/header.ejs') %>
+
+    <div class="d-flex align-items-center justify-content-center">
+        <form method="GET" action="">
+            <div class="input-group">
+                <% if (currentForecast == "") { %>
+                    <input type="text" class="form-control" id="searchquery" name="q" required />
+                <% } else { %>
+                    <input type="text" class="form-control" id="searchquery" name="q" value="<%=currentForecast.query%>" required />
+                <% } %>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+    </div><br />
+
+    <% if (currentForecast == "") { %>
+    <div style="text-align: center;">
+        <small>
+            60601 (Least accurate)<br />
+            Chicago IL (More accurate) <br />
+            233 S Wacker Dr Chicago IL (Most accurate)
+        </small>
+    </div>
+    <% } %>
+
+    <!-- Location Error -->
+    <% if (locationError) { %>
+    <br />
+    <div class="alert alert-dismissible alert-warning text-center">
+        <p class="mb-0">There was an issue finding your location, please double check your entry.</p>
+    </div>
+    <% } %>
+
+    <!-- Forecast Error -->
+    <% if (forecastError) { %>
+    <br />
+    <div class="alert alert-dismissible alert-warning text-center">
+        <p class="mb-0">There was an issue obtaining your forecast, please refresh.</p>
+    </div>
+    <% } %>
+
+    <!-- ALERTS -->
+     <% if (alertsForecast != "") { %>
+        <div class="accordion" id="accordionExample">
+            <% alertsForecast.forEach((alerts, i) => { %>
+                <div class="accordion-item alert">
+                    <h2 class="accordion-header" id="heading<%=i%>">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%=i%>" aria-expanded="false" aria-controls="collapse<%=i%>>">
+                            <i class="fa-solid fa-triangle-exclamation"></i>&nbsp;<%=alerts.properties.event%>
+                        </button>
+                    </h2>
+                    <div id="collapse<%=i%>" class="accordion-collapse collapse" aria-labelledby="heading<%=i%>" data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <%=alerts.properties.description%><br /><br /><%=alerts.properties.senderName%>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } %>
+
+    <!-- CURRENT FORECAST -->
+    <% if (currentForecast != "") { %>
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="card" style="width: 18rem;">
+            <div class="card-header text-white bg-primary">Current</div>
+            <div class="card-body">
+                <div class="text-center">
+                    <h6 class="card-title"><%=currentForecast.temperatureTime%></h6>
+                    <img class="img-fluid" src="<%=currentForecast.icon%>" />
+                    <h3><%-currentForecast.temperature%> <%-currentForecast.temperaturetrend%></h3>
+                    <% if (currentForecast.apparentTemperature != currentForecast.temperature) { %>
+                        <p  class="card-text">Feels like: <%-currentForecast.apparentTemperature%></p>
+                    <% } %>
+                    <% if (currentForecast.windSpeed != '') { %>
+                        <p class="card-text">Wind: <%-currentForecast.windSpeed%>
+                        <% if (currentForecast.windGust != '') { %>
+                            <br />Gusts: <%-currentForecast.windGust%>
+                        <% } %>
+                        </p>
+                    <% } %>
+                    <h5><%=currentForecast.shortForecast%></h5>
+                    <%if (currentForecast.precipitation != 0 && currentForecast.weather != null && currentForecast.weather != 'fog') { %>
+                        <p class="card-text"><%=currentForecast.precipitation%>% chance of precipitation</p>
+                    <% } %>
+                    <% if (currentForecast.highTemp != 999) { %>
+                    <p class="card-text">
+                        High <%-currentForecast.highTemp%> at <%=currentForecast.highTime%><br />
+                        &nbsp;Low <%-currentForecast.lowTemp%> at <%=currentForecast.lowTime%>
+                    </p>
+                    <% } else { %>
+                    <p class="card-text"><font size="1">High and Low times are not currently available</font></p>
+                    <% } %>
+                    <% if (currentForecast.sunrise != null && currentForecast.sunset != null) { %>
+                    <div class="badge bg-warning">Sunrise <%=currentForecast.sunrise%></div>
+                    <div class="badge bg-dark">Sunset <%=currentForecast.sunset%></div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div><br />
+    <% } %>
+
+    <!-- HOURLY FORECAST -->
+    <% if (hourlyForecast != "") { %>
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="card" style="width: 18rem;">
+            <div class="card-header text-white bg-primary">Hourly</div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="swiper" id="swiper-hourly" style="text-align: center;">
+                        <div class="swiper-wrapper">
+                            <%
+                            hourlyForecast.forEach((hourly) => {
+                            %>
+                            <div class="swiper-slide">
+                                <h6 class="card-title"><%=hourly.temperatureTime%></h6>
+                                <img src="<%=hourly.icon%>" />
+                                <h4><%-hourly.temperature%></h4>
+                                <% if (hourly.apparentTemperature != hourly.temperature) { %>
+                                    <p class="card-text">Feels like: <%-hourly.apparentTemperature%></p>
+                                <% } else { %>
+                                    <br />
+                                <% } %>
+                                <h6><%=hourly.shortForecast%></h6>
+                                <%if (hourly.precipitation != 0 && hourly.weather != null && hourly.weather != 'fog') { %>
+                                    <p class="card-text"><%=hourly.precipitation%>%</p>
+                                <% } %>
+                            </div>
+                            <%
+                            })
+                            %>
+                        </div>
+                    </div>
+                    <div id="swiper-hourly-prev" class="swiper-button-prev"></div>
+                    <div id="swiper-hourly-next" class="swiper-button-next"></div>
+                </div>
+            </div>
+        </div>
+    </div><br />
+    <% } %>
+
+    <% if (dailyForecast != "") { %>
+    <!-- DAILY FORECAST -->
+    <% dailyForecast.forEach((daily) => { %>
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="card" style="width: 18rem;">
+            <div class="card-header text-white bg-primary"><%=daily.dayOfWeek%></div>
+            <div class="card-body">
+                <div class="text-center">
+                    <% if (daily.morningHide != true) { %>
+                    <img src="<%=daily.morningForecast.icon%>" />
+                    <h6><%=daily.morningForecast.shortForecast%></h6>
+                    <p class="card-text">
+                        High <%-daily.morningHigh%> at <%=daily.morningHighTime%><br />&nbsp;
+                        Low <%-daily.morningLow%> at <%=daily.morningLowTime%>
+                    </p>
+                    <% } %>
+                    <div class="badge bg-warning">Sunrise <%=daily.sunrise%></div><br /><br />
+                    <% if (daily.dayHide != true) { %>
+                    <img src="<%=daily.dayForecast.icon%>" />
+                    <h6><%=daily.dayForecast.shortForecast%></h6>
+                    <p class="card-text">
+                        High <%-daily.dayHigh%> at <%=daily.dayHighTime%><br />&nbsp;
+                        Low <%-daily.dayLow%> at <%=daily.dayLowTime%>
+                    </p>
+                    <% } %>
+                    <div class="badge bg-dark">Sunset <%=daily.sunset%></div><br /><br />
+                    <% if (daily.eveningHide != true) { %>
+                    <img src="<%=daily.eveningForecast.icon%>" />
+                    <h6><%=daily.eveningForecast.shortForecast%></h6>
+                    <p class="card-text">
+                        High <%-daily.eveningHigh%> at <%=daily.eveningHighTime%><br />&nbsp;
+                        Low <%-daily.eveningLow%> at <%=daily.eveningLowTime%>
+                    </p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div><br />
+    <% }) %>
+    <% } %>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var swiperHourly = new Swiper('#swiper-hourly', {
+            initialSlide: 1,
+            slidesPerView: 2,
+            navigation: {
+                nextEl: '#swiper-hourly-next',
+                prevEl: '#swiper-hourly-prev'
+            }
+        });
+    });
+</script>
+
+<%- include('inc/footer.ejs', {timerTotal: timerTotal}) %>
